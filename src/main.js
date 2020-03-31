@@ -291,15 +291,9 @@ const createDayTemplate = () => {
       <time class="day__date" datetime="2019-03-18">MAR 18</time>
     </div>
 
+    <ul class="trip-events__list">
+    </ul>
   </li>
-`
-  );
-};
-
-const createEventsListTemplate = () => {
-  return (
-    `    <ul class="trip-events__list">
-  </ul>
 `
   );
 };
@@ -376,8 +370,6 @@ const tripDaysListElement = tripEventsElement.querySelector(`.trip-days`);
 render(tripDaysListElement, createDayTemplate());
 
 const tripDayElement = tripDaysListElement.querySelector(`.trip-days__item`);
-render(tripDayElement, createEventsListTemplate());
-
 const tripEventListElement = tripDayElement.querySelector(`.trip-events__list`);
 for (let index = 0; index < EVENTS_COUNT; index++) {
   render(tripEventListElement, createEventTemplate());
