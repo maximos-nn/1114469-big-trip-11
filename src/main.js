@@ -9,7 +9,7 @@ import {createTripCostTemplate} from "./components/trip-cost";
 import {createTripInfoTemplate} from "./components/trip-info";
 import {generateEventTypes} from "./mocks/event-type";
 import {generateEvents} from "./mocks/event";
-import {getDate} from "./utils";
+import {getDate, formatMonthDayDate} from "./utils";
 
 const EVENTS_COUNT = 20;
 
@@ -31,14 +31,22 @@ const mapEventToDate = (resultMap, event) => {
 const groupByDays = (events) => events.reduce(mapEventToDate, new Map());
 
 const getTripTitle = (events) => {
-  const len = events.length;
+  const len = events && events.length;
   if (!len) {
     return ``;
   }
   if (len <= 3) {
-    return events.map((event) => event.destination).join(` — `);
+    return events.map((event) => event.destination).join(`&nbsp;&mdash;&nbsp;`);
   }
-  return `${events[0].destination} — … — ${events[len - 1].destination}`;
+  return `${events[0].destination}&nbsp;&mdash;&nbsp;&hellip;&nbsp;&mdash;&nbsp;${events[len - 1].destination}`;
+};
+
+const getTripPeriod = (events) => {
+  const len = events && events.length;
+  if (!len) {
+    return ``;
+  }
+  return `${formatMonthDayDate(events[0].startDate)}&nbsp;&mdash;&nbsp;${formatMonthDayDate(events[len - 1].endDate)}`;
 };
 
 const cost = 1230;
@@ -49,7 +57,7 @@ const eventsByDays = groupByDays(events);
 // Загловок.
 const tripMainElement = document.querySelector(`.trip-main`);
 // Блок информации о маршруте: наименование, сроки и стоимость.
-render(tripMainElement, createTripInfoTemplate(getTripTitle(events)), `afterbegin`);
+render(tripMainElement, createTripInfoTemplate(getTripTitle(events), getTripPeriod(events)), `afterbegin`);
 const tripInfoElement = tripMainElement.querySelector(`.trip-main__trip-info`);
 render(tripInfoElement, createTripCostTemplate(cost));
 // Блок элементов управления: навигация и фильтры.

@@ -40,6 +40,10 @@ const formatDuration = (firstDate, secondDate) => {
   return `${castValue(minutes)}M`;
 };
 
+const formatMonthDayDate = (date) => {
+  return date.toDateString().split(` `).slice(1, 3).join(` `);
+};
+
 const getDate = (unixTime) => {
   const date = new Date(unixTime);
   date.setHours(0, 0, 0, 0);
@@ -48,4 +52,4 @@ const getDate = (unixTime) => {
 
 const capitalizeFirstLetter = ([first, ...rest]) => [first.toUpperCase(), ...rest].join(``);
 
-export {formatTime, formatDate, formatISODate, formatDuration, getDate, capitalizeFirstLetter};
+export {formatTime, formatDate, formatISODate, formatMonthDayDate, formatDuration, getDate, capitalizeFirstLetter};

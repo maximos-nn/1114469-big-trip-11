@@ -1,7 +1,7 @@
-import {formatISODate} from "../utils";
+import {formatISODate, formatMonthDayDate} from "../utils";
 
 export const createDayTemplate = (counter, date) => {
-  const dateValue = date.toDateString().split(` `).slice(1, 3).join(` `);
+  const dateValue = formatMonthDayDate(date);
   return (
     `            <li class="trip-days__item  day">
     <div class="day__info">
