@@ -52,4 +52,8 @@ const getDate = (unixTime) => {
 
 const capitalizeFirstLetter = ([first, ...rest]) => [first.toUpperCase(), ...rest].join(``);
 
-export {formatTime, formatDate, formatISODate, formatMonthDayDate, formatDuration, getDate, capitalizeFirstLetter};
+const render = (container, template, place = `beforeend`) => {
+  container.insertAdjacentHTML(place, template);
+};
+
+export {formatTime, formatDate, formatISODate, formatMonthDayDate, formatDuration, getDate, capitalizeFirstLetter, render};

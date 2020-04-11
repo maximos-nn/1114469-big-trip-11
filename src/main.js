@@ -9,13 +9,11 @@ import {createTripCostTemplate} from "./components/trip-cost";
 import {createTripInfoTemplate} from "./components/trip-info";
 import {generateEventTypes} from "./mocks/event-type";
 import {generateEvents} from "./mocks/event";
-import {getDate, formatMonthDayDate} from "./utils";
+import {generateMenu} from "./mocks/menu";
+import {generateFilter} from "./mocks/filter";
+import {getDate, render} from "./utils";
 
 const EVENTS_COUNT = 20;
-
-const render = (container, template, place = `beforeend`) => {
-  container.insertAdjacentHTML(place, template);
-};
 
 const mapEventToDate = (resultMap, event) => {
   const key = getDate(event.startDate.getTime());
@@ -30,48 +28,20 @@ const mapEventToDate = (resultMap, event) => {
 
 const groupByDays = (events) => events.reduce(mapEventToDate, new Map());
 
-const getTripTitle = (events) => {
-  const len = events && events.length;
-  if (!len) {
-    return ``;
-  }
-  if (len <= 3) {
-    return events.map((event) => event.destination).join(`&nbsp;&mdash;&nbsp;`);
-  }
-  return `${events[0].destination}&nbsp;&mdash;&nbsp;&hellip;&nbsp;&mdash;&nbsp;${events[len - 1].destination}`;
-};
-
-const getTripPeriod = (events) => {
-  const len = events && events.length;
-  if (!len) {
-    return ``;
-  }
-  return `${formatMonthDayDate(events[0].startDate)}&nbsp;&mdash;&nbsp;${formatMonthDayDate(events[len - 1].endDate)}`;
-};
-
-const getOffersTotalPrice = (total, offer) => total + (offer.isSelected ? offer.price : 0);
-
-const getEventTotalPrice = (total, event) => total + event.price + event.offers.reduce(getOffersTotalPrice, 0);
-
-const getTotalPrice = (events) => events.reduce(getEventTotalPrice, 0);
-
 const eventTypes = generateEventTypes();
 const events = generateEvents(EVENTS_COUNT).sort((a, b) => a.startDate - b.startDate);
 const eventsByDays = groupByDays(events);
-const cost = getTotalPrice(events);
-const title = getTripTitle(events);
-const period = getTripPeriod(events);
 
 // Загловок.
 const tripMainElement = document.querySelector(`.trip-main`);
 // Блок информации о маршруте: наименование, сроки и стоимость.
-render(tripMainElement, createTripInfoTemplate(title, period), `afterbegin`);
+render(tripMainElement, createTripInfoTemplate(events), `afterbegin`);
 const tripInfoElement = tripMainElement.querySelector(`.trip-main__trip-info`);
-render(tripInfoElement, createTripCostTemplate(cost));
+render(tripInfoElement, createTripCostTemplate(events));
 // Блок элементов управления: навигация и фильтры.
 const tripControlsElement = tripMainElement.querySelector(`.trip-main__trip-controls`);
-render(tripControlsElement.querySelector(`h2`), createMenuTemplate(), `afterend`);
-render(tripControlsElement, createFiltersTemplate());
+render(tripControlsElement.querySelector(`h2`), createMenuTemplate(generateMenu()), `afterend`);
+render(tripControlsElement, createFiltersTemplate(generateFilter()));
 
 
 // Основной контейнер для точек маршрута.

@@ -26,29 +26,11 @@ const createEventGroupMarkup = (group, currentType) => {
   );
 };
 
-const createEventTypeListMarkup = (eventTypes, currentType) => {
-  const eventGroupsMarkup = eventTypes.map((group) => createEventGroupMarkup(group, currentType)).join(`\n`);
-  return (
-    `        <div class="event__type-list">
-    ${eventGroupsMarkup}
-  </div>
-`
-  );
-};
-
-const createPhotoMarkup = (src) => {
-  return (
-    `        <img class="event__photo" src="${src}" alt="Event photo">
-    `
-  );
-};
-
 const createPhotosMarkup = (photos) => {
-  const photosMarkup = photos.map((photo) => createPhotoMarkup(photo)).join(`\n`);
   return (
     `    <div class="event__photos-container">
     <div class="event__photos-tape">
-    ${photosMarkup}
+      ${photos.map((photo) => `<img class="event__photo" src="${photo}" alt="Event photo">`).join(`\n`)}
     </div>
   </div>
 `
@@ -122,13 +104,6 @@ const createDetailsMarkup = (offers, destinationInfo) => {
   );
 };
 
-const createDestinationOptionMarkup = (option) => {
-  return (
-    `          <option value="${option}"></option>
-    `
-  );
-};
-
 const createEditModeControls = (isFavorite) => {
   const checkedAttrib = isFavorite ? `checked` : ``;
   return (
@@ -154,11 +129,8 @@ export const createEditFormTemplate = (eventTypes, event) => {
   }
   const {type, preposition, destination, startDate, endDate, price, offers, destinationInfo, isFavorite} = event;
 
-  const eventTypeListMarkup = createEventTypeListMarkup(eventTypes, type);
   const destinationOptions = [`Amsterdam`, `Geneva`, `Chamonix`, `Saint Petersburg`];
-  const destinationOptionsMarkup = destinationOptions.map((option) => createDestinationOptionMarkup(option)).join(`\n`);
   const destinationLabelText = `${capitalizeFirstLetter(type)} ${preposition}`;
-  const destinationName = destination;
   const positionClass = isEditMode ? `` : `trip-events__item`;
   const resetButtonCaption = isEditMode ? `Delete` : `Cancel`;
   const editModeControls = isEditMode ? createEditModeControls(isFavorite) : ``;
@@ -176,16 +148,18 @@ export const createEditFormTemplate = (eventTypes, event) => {
         </label>
         <input class="event__type-toggle  visually-hidden" id="event-type-toggle-1" type="checkbox">
 
-        ${eventTypeListMarkup}
+        <div class="event__type-list">
+          ${eventTypes.map((group) => createEventGroupMarkup(group, type)).join(`\n`)}
+        </div>
       </div>
 
       <div class="event__field-group  event__field-group--destination">
         <label class="event__label  event__type-output" for="event-destination-1">
           ${destinationLabelText}
         </label>
-        <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destinationName}" list="destination-list-1">
+        <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination}" list="destination-list-1">
         <datalist id="destination-list-1">
-          ${destinationOptionsMarkup}
+          ${destinationOptions.map((option) => `<option value="${option}"></option>`).join(`\n`)}
         </datalist>
       </div>
 

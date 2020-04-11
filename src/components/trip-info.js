@@ -1,3 +1,24 @@
+import {formatMonthDayDate} from "../utils";
+
+const getTripTitle = (events) => {
+  const len = events && events.length;
+  if (!len) {
+    return ``;
+  }
+  if (len <= 3) {
+    return events.map((event) => event.destination).join(`&nbsp;&mdash;&nbsp;`);
+  }
+  return `${events[0].destination}&nbsp;&mdash;&nbsp;&hellip;&nbsp;&mdash;&nbsp;${events[len - 1].destination}`;
+};
+
+const getTripPeriod = (events) => {
+  const len = events && events.length;
+  if (!len) {
+    return ``;
+  }
+  return `${formatMonthDayDate(events[0].startDate)}&nbsp;&mdash;&nbsp;${formatMonthDayDate(events[len - 1].endDate)}`;
+};
+
 const createInfoMarkup = (title, period) => {
   return (
     `    <div class="trip-info__main">
@@ -9,7 +30,9 @@ const createInfoMarkup = (title, period) => {
   );
 };
 
-export const createTripInfoTemplate = (title, period) => {
+export const createTripInfoTemplate = (events) => {
+  const title = getTripTitle(events);
+  const period = getTripPeriod(events);
   const infoMarkup = title && period ? createInfoMarkup(title, period) : ``;
   return (
     `          <section class="trip-main__trip-info  trip-info">
