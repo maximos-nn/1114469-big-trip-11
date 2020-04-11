@@ -30,6 +30,17 @@ const mapEventToDate = (resultMap, event) => {
 
 const groupByDays = (events) => events.reduce(mapEventToDate, new Map());
 
+const getTripTitle = (events) => {
+  const len = events.length;
+  if (!len) {
+    return ``;
+  }
+  if (len <= 3) {
+    return events.map((event) => event.destination).join(` — `);
+  }
+  return `${events[0].destination} — … — ${events[len - 1].destination}`;
+};
+
 const cost = 1230;
 const eventTypes = generateEventTypes();
 const events = generateEvents(EVENTS_COUNT).sort((a, b) => a.startDate - b.startDate);
@@ -38,7 +49,7 @@ const eventsByDays = groupByDays(events);
 // Загловок.
 const tripMainElement = document.querySelector(`.trip-main`);
 // Блок информации о маршруте: наименование, сроки и стоимость.
-render(tripMainElement, createTripInfoTemplate(), `afterbegin`);
+render(tripMainElement, createTripInfoTemplate(getTripTitle(events)), `afterbegin`);
 const tripInfoElement = tripMainElement.querySelector(`.trip-main__trip-info`);
 render(tripInfoElement, createTripCostTemplate(cost));
 // Блок элементов управления: навигация и фильтры.
