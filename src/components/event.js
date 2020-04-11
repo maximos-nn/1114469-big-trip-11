@@ -3,7 +3,8 @@ import {formatDuration, formatTime, capitalizeFirstLetter} from "../utils";
 const OFFERS_COUNT = 3;
 
 const createOffersMarkup = (offers) => {
-  return offers.slice(0, OFFERS_COUNT).map((offer) => {
+  return offers.filter((offer) => offer.isSelected).slice(0, OFFERS_COUNT)
+  .map((offer) => {
     const {title, price} = offer;
     return (
       `      <li class="event__offer">

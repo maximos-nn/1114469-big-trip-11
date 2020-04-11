@@ -11,7 +11,7 @@ import {generateEventTypes} from "./mocks/event-type";
 import {generateEvents} from "./mocks/event";
 import {getDate, formatMonthDayDate} from "./utils";
 
-const EVENTS_COUNT = 20;
+const EVENTS_COUNT = 3;
 
 const render = (container, template, place = `beforeend`) => {
   container.insertAdjacentHTML(place, template);
@@ -49,10 +49,16 @@ const getTripPeriod = (events) => {
   return `${formatMonthDayDate(events[0].startDate)}&nbsp;&mdash;&nbsp;${formatMonthDayDate(events[len - 1].endDate)}`;
 };
 
-const cost = 1230;
+const getOffersTotalPrice = (total, offer) => total + (offer.isSelected ? offer.price : 0);
+
+const getEventTotalPrice = (total, event) => total + event.price + event.offers.reduce(getOffersTotalPrice, 0);
+
+const getTotalPrice = (events) => events.reduce(getEventTotalPrice, 0);
+
 const eventTypes = generateEventTypes();
 const events = generateEvents(EVENTS_COUNT).sort((a, b) => a.startDate - b.startDate);
 const eventsByDays = groupByDays(events);
+const cost = getTotalPrice(events);
 
 // Загловок.
 const tripMainElement = document.querySelector(`.trip-main`);
