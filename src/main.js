@@ -59,11 +59,13 @@ const eventTypes = generateEventTypes();
 const events = generateEvents(EVENTS_COUNT).sort((a, b) => a.startDate - b.startDate);
 const eventsByDays = groupByDays(events);
 const cost = getTotalPrice(events);
+const title = getTripTitle(events);
+const period = getTripPeriod(events);
 
 // Загловок.
 const tripMainElement = document.querySelector(`.trip-main`);
 // Блок информации о маршруте: наименование, сроки и стоимость.
-render(tripMainElement, createTripInfoTemplate(getTripTitle(events), getTripPeriod(events)), `afterbegin`);
+render(tripMainElement, createTripInfoTemplate(title, period), `afterbegin`);
 const tripInfoElement = tripMainElement.querySelector(`.trip-main__trip-info`);
 render(tripInfoElement, createTripCostTemplate(cost));
 // Блок элементов управления: навигация и фильтры.
