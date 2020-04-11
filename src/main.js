@@ -9,6 +9,7 @@ import {createTripCostTemplate} from "./components/trip-cost";
 import {createTripInfoTemplate} from "./components/trip-info";
 import {generateEventTypes} from "./mocks/event-type";
 import {generateEvents} from "./mocks/event";
+import {getDate} from "./utils";
 
 const EVENTS_COUNT = 20;
 
@@ -16,20 +17,23 @@ const render = (container, template, place = `beforeend`) => {
   container.insertAdjacentHTML(place, template);
 };
 
+const mapEventToDate = (resultMap, event) => {
+  const key = getDate(event.startDate.getTime());
+
+  if (!resultMap.has(key)) {
+    resultMap.set(key, []);
+  }
+
+  resultMap.get(key).push(event);
+  return resultMap;
+};
+
+const groupByDays = (events) => events.reduce(mapEventToDate, new Map());
+
 const cost = 1230;
 const eventTypes = generateEventTypes();
 const events = generateEvents(EVENTS_COUNT).sort((a, b) => a.startDate - b.startDate);
-
-const eventsByDays = events.reduce((result, item) => {
-  const date = new Date(item.startDate.getTime());
-  date.setHours(0, 0, 0, 0);
-  const key = date.getTime();
-  if (!result.has(key)) {
-    result.set(key, []);
-  }
-  result.get(key).push(item);
-  return result;
-}, new Map());
+const eventsByDays = groupByDays(events);
 
 // Загловок.
 const tripMainElement = document.querySelector(`.trip-main`);
@@ -57,7 +61,7 @@ render(tripEventsElement, createDaysListTemplate());
 const tripDaysListElement = tripEventsElement.querySelector(`.trip-days`);
 
 let currentDay = 1;
-for (const [key, dayEvents] of eventsByDays) {
+for (const [key, dayEvents] of eventsByDays) { // [...eventsByDays.keys()].forEach((date, index) => {});
 
   // День. Содержит список точек. В режиме сортировки блок day__info должен быть пустым.
   render(tripDaysListElement, createDayTemplate(currentDay++, new Date(key)));

@@ -40,6 +40,12 @@ const formatDuration = (firstDate, secondDate) => {
   return `${castValue(minutes)}M`;
 };
 
+const getDate = (unixTime) => {
+  const date = new Date(unixTime);
+  date.setHours(0, 0, 0, 0);
+  return date.getTime();
+};
+
 const capitalizeFirstLetter = ([first, ...rest]) => [first.toUpperCase(), ...rest].join(``);
 
-export {formatTime, formatDate, formatISODate, formatDuration, capitalizeFirstLetter};
+export {formatTime, formatDate, formatISODate, formatDuration, getDate, capitalizeFirstLetter};
