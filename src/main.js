@@ -11,7 +11,7 @@ import {generateEventTypes} from "./mocks/event-type";
 import {generateEvents} from "./mocks/event";
 import {getDate, formatMonthDayDate} from "./utils";
 
-const EVENTS_COUNT = 3;
+const EVENTS_COUNT = 20;
 
 const render = (container, template, place = `beforeend`) => {
   container.insertAdjacentHTML(place, template);
