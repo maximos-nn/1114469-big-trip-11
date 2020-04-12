@@ -8,6 +8,7 @@ import {createSortTemplate} from "./components/sorting";
 import {createTripCostTemplate} from "./components/trip-cost";
 import {createTripInfoTemplate} from "./components/trip-info";
 import {generateEventTypes} from "./mocks/event-type";
+import {generateDestinations} from "./mocks/destination";
 import {generateEvents} from "./mocks/event";
 import {generateMenu} from "./mocks/menu";
 import {generateFilter} from "./mocks/filter";
@@ -29,7 +30,8 @@ const mapEventToDate = (resultMap, event) => {
 const groupByDays = (events) => events.reduce(mapEventToDate, new Map());
 
 const eventTypes = generateEventTypes();
-const events = generateEvents(EVENTS_COUNT).sort((a, b) => a.startDate - b.startDate);
+const destinations = generateDestinations();
+const events = generateEvents(EVENTS_COUNT, eventTypes, destinations).sort((a, b) => a.startDate - b.startDate);
 const eventsByDays = groupByDays(events);
 
 // Загловок.

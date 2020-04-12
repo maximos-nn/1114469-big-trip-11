@@ -56,4 +56,30 @@ const render = (container, template, place = `beforeend`) => {
   container.insertAdjacentHTML(place, template);
 };
 
-export {formatTime, formatDate, formatISODate, formatMonthDayDate, formatDuration, getDate, capitalizeFirstLetter, render};
+const getRandomInteger = (min, max) => {
+  return min + Math.floor(Math.random() * (max - min));
+};
+
+const getRandomIntegers = (min, max, count) => {
+  const integers = new Set();
+  while (integers.size < count) {
+    integers.add(getRandomInteger(min, max));
+  }
+  return [...integers];
+};
+
+const getRandomArrayElement = (array) => array[getRandomInteger(0, array.length)];
+
+export {
+  formatTime,
+  formatDate,
+  formatISODate,
+  formatMonthDayDate,
+  formatDuration,
+  getDate,
+  capitalizeFirstLetter,
+  render,
+  getRandomInteger,
+  getRandomIntegers,
+  getRandomArrayElement
+};
