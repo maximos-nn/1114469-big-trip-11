@@ -52,8 +52,30 @@ const getDate = (unixTime) => {
 
 const capitalizeFirstLetter = ([first, ...rest]) => [first.toUpperCase(), ...rest].join(``);
 
-const render = (container, template, place = `beforeend`) => {
-  container.insertAdjacentHTML(place, template);
+const createElement = (template) => {
+  const newElement = document.createElement(`div`);
+  newElement.innerHTML = template;
+  return newElement.firstElementChild;
+};
+
+const RenderPosition = {
+  AFTERBEGIN: `afterbegin`,
+  AFTEREND: `afterend`,
+  BEFOREEND: `beforeend`
+};
+
+const render = (container, element, place = RenderPosition.BEFOREEND) => {
+  switch (place) {
+    case RenderPosition.AFTERBEGIN:
+      container.prepend(element);
+      break;
+    case RenderPosition.BEFOREEND:
+      container.append(element);
+      break;
+    case RenderPosition.AFTEREND:
+      container.parentNode.insertBefore(element, container.nextSibling);
+      break;
+  }
 };
 
 const getRandomInteger = (min, max) => {
@@ -78,6 +100,8 @@ export {
   formatDuration,
   getDate,
   capitalizeFirstLetter,
+  createElement,
+  RenderPosition,
   render,
   getRandomInteger,
   getRandomIntegers,
