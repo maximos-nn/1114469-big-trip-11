@@ -1,15 +1,14 @@
-import {capitalizeFirstLetter, formatDate, formatTime} from "../utils";
+import {capitalizeFirstLetter, formatDate, formatTime, createElement} from "../utils";
 import {generateDefaultEvent} from "../mocks/event";
 
 const createEventTypeMarkup = (type, currentType) => {
   const checkedAttrib = type === currentType ? `checked` : ``;
   const title = capitalizeFirstLetter(type);
   return (
-    `    <div class="event__type-item">
+    `<div class="event__type-item">
     <input id="event-type-${type}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${type}" ${checkedAttrib}>
     <label class="event__type-label  event__type-label--${type}" for="event-type-${type}-1">${title}</label>
-  </div>
-`
+  </div>`
   );
 };
 
@@ -17,23 +16,21 @@ const createEventGroupMarkup = (group, currentType) => {
   const {group: title, types} = group;
   const typesMarkup = types.map((type) => createEventTypeMarkup(type, currentType)).join(`\n`);
   return (
-    `    <fieldset class="event__type-group">
+    `<fieldset class="event__type-group">
     <legend class="visually-hidden">${title}</legend>
 
     ${typesMarkup}
-  </fieldset>
-`
+  </fieldset>`
   );
 };
 
 const createPhotosMarkup = (photos) => {
   return (
-    `    <div class="event__photos-container">
+    `<div class="event__photos-container">
     <div class="event__photos-tape">
       ${photos.map((photo) => `<img class="event__photo" src="${photo}" alt="Event photo">`).join(`\n`)}
     </div>
-  </div>
-`
+  </div>`
   );
 };
 
@@ -45,13 +42,12 @@ const createDestinationMarkup = (destinationInfo) => {
   const descriptionMarkup = description ? `<p class="event__destination-description">${description}</p>` : ``;
   const photosMarkup = photos.length ? createPhotosMarkup(photos) : ``;
   return (
-    `      <section class="event__section  event__section--destination">
+    `<section class="event__section  event__section--destination">
     <h3 class="event__section-title  event__section-title--destination">Destination</h3>
     ${descriptionMarkup}
 
     ${photosMarkup}
-  </section>
-`
+  </section>`
   );
 };
 
@@ -59,15 +55,14 @@ const createOfferMarkup = (offer) => {
   const {title, name, price, isSelected} = offer;
   const checkedAttrib = isSelected ? `checked` : ``;
   return (
-    `      <div class="event__offer-selector">
+    `<div class="event__offer-selector">
     <input class="event__offer-checkbox  visually-hidden" id="event-offer-${name}-1" type="checkbox" name="event-offer-${name}" ${checkedAttrib}>
     <label class="event__offer-label" for="event-offer-${name}-1">
       <span class="event__offer-title">${title}</span>
       &plus;
       &euro;&nbsp;<span class="event__offer-price">${price}</span>
     </label>
-  </div>
-`
+  </div>`
   );
 };
 
@@ -77,14 +72,13 @@ const createOffersMarkup = (offers) => {
   }
   const offersMarkup = offers.map((offer) => createOfferMarkup(offer)).join(`\n`);
   return (
-    `      <section class="event__section  event__section--offers">
+    `<section class="event__section  event__section--offers">
     <h3 class="event__section-title  event__section-title--offers">Offers</h3>
 
     <div class="event__available-offers">
       ${offersMarkup}
     </div>
-  </section>
-`
+  </section>`
   );
 };
 
@@ -95,19 +89,18 @@ const createDetailsMarkup = (offers, destinationInfo) => {
     return ``;
   }
   return (
-    `    <section class="event__details">
+    `<section class="event__details">
     ${offersMarkup}
 
     ${destinationMarkup}
-  </section>
-`
+  </section>`
   );
 };
 
 const createEditModeControls = (isFavorite) => {
   const checkedAttrib = isFavorite ? `checked` : ``;
   return (
-    `      <input id="event-favorite-1" class="event__favorite-checkbox  visually-hidden" type="checkbox" name="event-favorite" ${checkedAttrib}>
+    `<input id="event-favorite-1" class="event__favorite-checkbox  visually-hidden" type="checkbox" name="event-favorite" ${checkedAttrib}>
     <label class="event__favorite-btn" for="event-favorite-1">
       <span class="visually-hidden">Add to favorite</span>
       <svg class="event__favorite-icon" width="28" height="28" viewBox="0 0 28 28">
@@ -117,12 +110,11 @@ const createEditModeControls = (isFavorite) => {
 
     <button class="event__rollup-btn" type="button">
       <span class="visually-hidden">Open event</span>
-    </button>
-`
+    </button>`
   );
 };
 
-export const createEditFormTemplate = (eventTypes, event) => {
+const createEditFormTemplate = (eventTypes, event) => {
   const isEditMode = !!event;
   if (!isEditMode) {
     event = generateDefaultEvent();
@@ -139,7 +131,7 @@ export const createEditFormTemplate = (eventTypes, event) => {
   const endDateValue = `${formatDate(endDate)} ${formatTime(endDate)}`;
 
   return (
-    `          <form class="${positionClass}  event  event--edit" action="#" method="post">
+    `<form class="${positionClass}  event  event--edit" action="#" method="post">
     <header class="event__header">
       <div class="event__type-wrapper">
         <label class="event__type  event__type-btn" for="event-type-toggle-1">
@@ -189,7 +181,29 @@ export const createEditFormTemplate = (eventTypes, event) => {
       ${editModeControls}
     </header>
     ${detailsMarkup}
-  </form>
-`
+  </form>`
   );
 };
+
+export default class EditForm {
+  constructor(eventTypes, event) {
+    this._eventTypes = eventTypes;
+    this._event = event;
+    this._element = null;
+  }
+
+  getTemplate() {
+    return createEditFormTemplate(this._eventTypes, this._event);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}

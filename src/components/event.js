@@ -1,4 +1,4 @@
-import {formatDuration, formatTime, capitalizeFirstLetter} from "../utils";
+import {formatDuration, formatTime, capitalizeFirstLetter, createElement} from "../utils";
 
 const OFFERS_COUNT = 3;
 
@@ -7,27 +7,25 @@ const createOffersMarkup = (offers) => {
   .map((offer) => {
     const {title, price} = offer;
     return (
-      `      <li class="event__offer">
+      `<li class="event__offer">
       <span class="event__offer-title">${title}</span>
       &plus;
       &euro;&nbsp;<span class="event__offer-price">${price}</span>
-    </li>
-`
+    </li>`
     );
   }).join(`\n`);
 };
 
 const createOffersListMarkup = (offers) => {
   return (
-    `      <h4 class="visually-hidden">Offers:</h4>
+    `<h4 class="visually-hidden">Offers:</h4>
     <ul class="event__selected-offers">
       ${createOffersMarkup(offers)}
-    </ul>
-`
+    </ul>`
   );
 };
 
-export const createEventTemplate = (event) => {
+const createEventTemplate = (event) => {
   const {type, preposition, destination, startDate, endDate, price, offers} = event;
   const title = `${capitalizeFirstLetter(type)} ${preposition} ${destination}`;
   const tagStartDate = startDate.toISOString();
@@ -38,7 +36,7 @@ export const createEventTemplate = (event) => {
 
   const offersMarkup = offers ? createOffersListMarkup(offers) : ``;
   return (
-    `    <li class="trip-events__item">
+    `<li class="trip-events__item">
     <div class="event">
       <div class="event__type">
         <img class="event__type-icon" width="42" height="42" src="img/icons/${type}.png" alt="Event type icon">
@@ -64,7 +62,28 @@ export const createEventTemplate = (event) => {
         <span class="visually-hidden">Open event</span>
       </button>
     </div>
-  </li>
-`
+  </li>`
   );
 };
+
+export default class Event {
+  constructor(event) {
+    this._event = event;
+    this._element = null;
+  }
+
+  getTemplate() {
+    return createEventTemplate(this._event);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}

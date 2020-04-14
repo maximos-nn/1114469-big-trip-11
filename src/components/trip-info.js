@@ -1,4 +1,4 @@
-import {formatMonthDayDate} from "../utils";
+import {formatMonthDayDate, createElement} from "../utils";
 
 const getTripTitle = (events) => {
   const len = events && events.length;
@@ -21,24 +21,42 @@ const getTripPeriod = (events) => {
 
 const createInfoMarkup = (title, period) => {
   return (
-    `    <div class="trip-info__main">
+    `<div class="trip-info__main">
     <h1 class="trip-info__title">${title}</h1>
-
     <p class="trip-info__dates">${period}</p>
-  </div>
-`
+  </div>`
   );
 };
 
-export const createTripInfoTemplate = (events) => {
+const createTripInfoTemplate = (events) => {
   const title = getTripTitle(events);
   const period = getTripPeriod(events);
   const infoMarkup = title && period ? createInfoMarkup(title, period) : ``;
   return (
-    `          <section class="trip-main__trip-info  trip-info">
+    `<section class="trip-main__trip-info  trip-info">
     ${infoMarkup}
-
-  </section>
-`
+  </section>`
   );
 };
+
+export default class TripInfo {
+  constructor(events) {
+    this._events = events;
+    this._element = null;
+  }
+
+  getTemplate() {
+    return createTripInfoTemplate(this._events);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}
