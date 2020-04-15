@@ -4,6 +4,7 @@ import EditForm from "./components/edit-form";
 import Event from "./components/event";
 import Filter from "./components/filter";
 import Menu from "./components/menu";
+import NoEvents from "./components/no-events";
 import Sort from "./components/sorting";
 import TripCost from "./components/trip-cost";
 import TripInfo from "./components/trip-info";
@@ -30,29 +31,80 @@ const mapEventToDate = (resultMap, event) => {
 const groupByDays = (events) => events.reduce(mapEventToDate, new Map());
 
 const renderEvent = (eventListElement, event, eventTypes) => {
-  const onEditButtonClick = () => {
+  const replaceEventToEdit = () => {
     eventListElement.replaceChild(eventEditElement, eventElement);
   };
 
-  const onEditFormSubmit = (evt) => {
-    evt.preventDefault();
+  const replaceEditToEvent = () => {
     eventListElement.replaceChild(eventElement, eventEditElement);
+  };
+
+  const onEscKeyDown = (evt) => {
+    const isEscKey = evt.key === `Escape` || evt.key === `Esc`;
+    if (isEscKey) {
+      replaceEditToEvent();
+      document.removeEventListener(`keydown`, onEscKeyDown);
+    }
   };
 
   const eventElement = new Event(event).getElement();
   const editButton = eventElement.querySelector(`.event__rollup-btn`);
-  editButton.addEventListener(`click`, onEditButtonClick);
+  editButton.addEventListener(`click`, () => {
+    replaceEventToEdit();
+    document.addEventListener(`keydown`, onEscKeyDown);
+  });
 
   const eventEditElement = new EditForm(eventTypes, event).getElement();
-  eventEditElement.addEventListener(`submit`, onEditFormSubmit);
+  eventEditElement.addEventListener(`submit`, (evt) => {
+    evt.preventDefault();
+    replaceEditToEvent();
+    document.removeEventListener(`keydown`, onEscKeyDown);
+  });
 
   render(eventListElement, eventElement);
+};
+
+const renderEvents = (events, eventTypes) => {
+  // Основной контейнер для точек маршрута.
+  const tripEventsElement = document.querySelector(`.trip-events`);
+
+  if (!events.length) {
+    render(tripEventsElement, new NoEvents().getElement());
+    return;
+  }
+
+  // Форма сортировки, заголовки столбцов. Выводим только при наличии точек маршрута.
+  render(tripEventsElement, new Sort().getElement());
+
+  // Форма создания/редактирования точки в режиме создания. Выводим в самом начале.
+  // render(tripEventsElement, new EditForm(eventTypes).getElement());
+
+  // Список дней и контейнер для точек маршрута. Выводим только при наличии точек.
+  // Должен содержать как минимум один элемент. В режиме сортировки используется только один элемент.
+  const tripDaysListElement = new DayList().getElement();
+  render(tripEventsElement, tripDaysListElement);
+
+  const eventsByDays = groupByDays(events);
+  let currentDay = 1;
+  for (const [key, dayEvents] of eventsByDays) { // [...eventsByDays.keys()].forEach((date, index) => {});
+
+    // День. Содержит список точек. В режиме сортировки блок day__info должен быть пустым.
+    const tripDayElement = new Day(currentDay++, new Date(key)).getElement();
+    render(tripDaysListElement, tripDayElement);
+    // Элемент списка точек в контейнере (дне).
+    const tripEventListElement = tripDayElement.querySelector(`.trip-events__list`);
+
+    // Точки маршрута.
+    for (const event of dayEvents) {
+      renderEvent(tripEventListElement, event, eventTypes);
+    }
+
+  }
 };
 
 const eventTypes = generateEventTypes();
 const destinations = generateDestinations();
 const events = generateEvents(EVENTS_COUNT, eventTypes, destinations).sort((a, b) => a.startDate - b.startDate);
-const eventsByDays = groupByDays(events);
 
 // Загловок.
 const tripMainElement = document.querySelector(`.trip-main`);
@@ -65,36 +117,7 @@ const tripControlsElement = tripMainElement.querySelector(`.trip-main__trip-cont
 render(tripControlsElement.querySelector(`h2`), new Menu(generateMenu()).getElement(), RenderPosition.AFTEREND);
 render(tripControlsElement, new Filter(generateFilter()).getElement());
 
-
-// Основной контейнер для точек маршрута.
-const tripEventsElement = document.querySelector(`.trip-events`);
-// Форма сортировки, заголовки столбцов. Выводим только при наличии точек маршрута.
-render(tripEventsElement, new Sort().getElement());
-
-// Форма создания/редактирования точки в режиме создания. Выводим в самом начале.
-// render(tripEventsElement, new EditForm(eventTypes).getElement());
-
-// Список дней и контейнер для точек маршрута. Выводим только при наличии точек.
-// Должен содержать как минимум один элемент. В режиме сортировки используется только один элемент.
-const tripDaysListElement = new DayList().getElement();
-render(tripEventsElement, tripDaysListElement);
-
-let currentDay = 1;
-for (const [key, dayEvents] of eventsByDays) { // [...eventsByDays.keys()].forEach((date, index) => {});
-
-  // День. Содержит список точек. В режиме сортировки блок day__info должен быть пустым.
-  const tripDayElement = new Day(currentDay++, new Date(key)).getElement();
-  render(tripDaysListElement, tripDayElement);
-  // Элемент списка точек в контейнере (дне).
-  const tripEventListElement = tripDayElement.querySelector(`.trip-events__list`);
-
-  // Точки маршрута.
-  for (const event of dayEvents) {
-    renderEvent(tripEventListElement, event, eventTypes);
-  }
-
-}
-
+renderEvents(events, eventTypes);
 
 // Основные операции с данными.
 // 1. Сортировка по дате и времени начала.
