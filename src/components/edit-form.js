@@ -1,4 +1,5 @@
-import {capitalizeFirstLetter, formatDate, formatTime, createElement} from "../utils";
+import {AbstractComponent} from "./abstract-component";
+import {capitalizeFirstLetter, formatDate, formatTime} from "../utils/format";
 import {generateDefaultEvent} from "../mocks/event";
 
 const createEventTypeMarkup = (type, currentType) => {
@@ -185,25 +186,18 @@ const createEditFormTemplate = (eventTypes, event) => {
   );
 };
 
-export default class EditForm {
+export class EditForm extends AbstractComponent {
   constructor(eventTypes, event) {
+    super();
     this._eventTypes = eventTypes;
     this._event = event;
-    this._element = null;
   }
 
   getTemplate() {
     return createEditFormTemplate(this._eventTypes, this._event);
   }
 
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate());
-    }
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
+  setSubmitHandler(handler) {
+    this.getElement().addEventListener(`submit`, handler);
   }
 }

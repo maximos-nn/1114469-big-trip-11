@@ -44,53 +44,7 @@ const formatMonthDayDate = (date) => {
   return date.toDateString().split(` `).slice(1, 3).join(` `);
 };
 
-const getDate = (unixTime) => {
-  const date = new Date(unixTime);
-  date.setHours(0, 0, 0, 0);
-  return date.getTime();
-};
-
 const capitalizeFirstLetter = ([first, ...rest]) => [first.toUpperCase(), ...rest].join(``);
-
-const createElement = (template) => {
-  const newElement = document.createElement(`div`);
-  newElement.innerHTML = template;
-  return newElement.firstElementChild;
-};
-
-const RenderPosition = {
-  AFTERBEGIN: `afterbegin`,
-  AFTEREND: `afterend`,
-  BEFOREEND: `beforeend`
-};
-
-const render = (container, element, place = RenderPosition.BEFOREEND) => {
-  switch (place) {
-    case RenderPosition.AFTERBEGIN:
-      container.prepend(element);
-      break;
-    case RenderPosition.BEFOREEND:
-      container.append(element);
-      break;
-    case RenderPosition.AFTEREND:
-      container.parentNode.insertBefore(element, container.nextSibling);
-      break;
-  }
-};
-
-const getRandomInteger = (min, max) => {
-  return min + Math.floor(Math.random() * (max - min));
-};
-
-const getRandomIntegers = (min, max, count) => {
-  const integers = new Set();
-  while (integers.size < count) {
-    integers.add(getRandomInteger(min, max));
-  }
-  return [...integers];
-};
-
-const getRandomArrayElement = (array) => array[getRandomInteger(0, array.length)];
 
 export {
   formatTime,
@@ -98,12 +52,5 @@ export {
   formatISODate,
   formatMonthDayDate,
   formatDuration,
-  getDate,
   capitalizeFirstLetter,
-  createElement,
-  RenderPosition,
-  render,
-  getRandomInteger,
-  getRandomIntegers,
-  getRandomArrayElement
 };
