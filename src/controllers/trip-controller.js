@@ -20,37 +20,54 @@ const mapEventToDate = (resultMap, event) => {
 
 const groupByDays = (events) => events.reduce(mapEventToDate, new Map());
 
-const renderEvent = (eventListElement, event, eventTypes) => {
-  const replaceEventToEdit = () => {
-    replace(eventEditComponent, eventComponent);
-  };
+const renderEvents = (events, eventTypes, container) => {
+  const eventsByDays = groupByDays(events);
+  let currentDay = 1;
+  for (const [key, dayEvents] of eventsByDays) { // [...eventsByDays.keys()].forEach((date, index) => {});
 
-  const replaceEditToEvent = () => {
-    replace(eventComponent, eventEditComponent);
-  };
+    // День. Содержит список точек. В режиме сортировки блок day__info должен быть пустым.
+    const tripDayComponent = new Day(currentDay++, new Date(key));
+    const tripDayElement = tripDayComponent.getElement();
+    render(container, tripDayComponent);
+    // Элемент списка точек в контейнере (дне).
+    const tripEventListElement = tripDayElement.querySelector(`.trip-events__list`);
 
-  const onEscKeyDown = (evt) => {
-    const isEscKey = evt.key === `Escape` || evt.key === `Esc`;
-    if (isEscKey) {
-      replaceEditToEvent();
-      document.removeEventListener(`keydown`, onEscKeyDown);
+    // Точки маршрута.
+    for (const event of dayEvents) {
+
+      const replaceEventToEdit = () => {
+        replace(eventEditComponent, eventComponent);
+      };
+
+      const replaceEditToEvent = () => {
+        replace(eventComponent, eventEditComponent);
+      };
+
+      const onEscKeyDown = (evt) => {
+        const isEscKey = evt.key === `Escape` || evt.key === `Esc`;
+        if (isEscKey) {
+          replaceEditToEvent();
+          document.removeEventListener(`keydown`, onEscKeyDown);
+        }
+      };
+
+      const eventComponent = new Event(event);
+      eventComponent.setEditButtonClickHandler(() => {
+        replaceEventToEdit();
+        document.addEventListener(`keydown`, onEscKeyDown);
+      });
+
+      const eventEditComponent = new EditForm(eventTypes, event);
+      eventEditComponent.setSubmitHandler((evt) => {
+        evt.preventDefault();
+        replaceEditToEvent();
+        document.removeEventListener(`keydown`, onEscKeyDown);
+      });
+
+      render(tripEventListElement, eventComponent);
+
     }
-  };
-
-  const eventComponent = new Event(event);
-  eventComponent.setEditButtonClickHandler(() => {
-    replaceEventToEdit();
-    document.addEventListener(`keydown`, onEscKeyDown);
-  });
-
-  const eventEditComponent = new EditForm(eventTypes, event);
-  eventEditComponent.setSubmitHandler((evt) => {
-    evt.preventDefault();
-    replaceEditToEvent();
-    document.removeEventListener(`keydown`, onEscKeyDown);
-  });
-
-  render(eventListElement, eventComponent);
+  }
 };
 
 export class TripController {
@@ -74,27 +91,12 @@ export class TripController {
     render(tripEventsElement, this._sortComponent);
 
     // Форма создания/редактирования точки в режиме создания. Выводим в самом начале.
-    // render(tripEventsElement, new EditForm(eventTypes).getElement());
+    // render(tripEventsElement, new EditForm(eventTypes));
 
     // Список дней и контейнер для точек маршрута. Выводим только при наличии точек.
     // Должен содержать как минимум один элемент. В режиме сортировки используется только один элемент.
     render(tripEventsElement, this._dayListComponent);
 
-    const eventsByDays = groupByDays(events);
-    let currentDay = 1;
-    for (const [key, dayEvents] of eventsByDays) { // [...eventsByDays.keys()].forEach((date, index) => {});
-
-      // День. Содержит список точек. В режиме сортировки блок day__info должен быть пустым.
-      const tripDayComponent = new Day(currentDay++, new Date(key));
-      const tripDayElement = tripDayComponent.getElement();
-      render(this._dayListComponent.getElement(), tripDayComponent);
-      // Элемент списка точек в контейнере (дне).
-      const tripEventListElement = tripDayElement.querySelector(`.trip-events__list`);
-
-      // Точки маршрута.
-      for (const event of dayEvents) {
-        renderEvent(tripEventListElement, event, eventTypes);
-      }
-    }
+    renderEvents(events, eventTypes, this._dayListComponent.getElement());
   }
 }
