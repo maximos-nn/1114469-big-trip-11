@@ -1,4 +1,5 @@
-import {formatMonthDayDate, createElement} from "../utils";
+import {AbstractComponent} from "./abstract-component";
+import {formatMonthDayDate} from "../utils/format";
 
 const getTripTitle = (events) => {
   const len = events && events.length;
@@ -39,24 +40,13 @@ const createTripInfoTemplate = (events) => {
   );
 };
 
-export default class TripInfo {
+export class TripInfo extends AbstractComponent {
   constructor(events) {
+    super();
     this._events = events;
-    this._element = null;
   }
 
   getTemplate() {
     return createTripInfoTemplate(this._events);
-  }
-
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate());
-    }
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
   }
 }

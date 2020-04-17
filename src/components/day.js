@@ -1,4 +1,5 @@
-import {formatISODate, formatMonthDayDate, createElement} from "../utils";
+import {AbstractComponent} from "./abstract-component";
+import {formatISODate, formatMonthDayDate} from "../utils/format";
 
 const createDayTemplate = (counter, date) => {
   const dateValue = formatMonthDayDate(date);
@@ -15,25 +16,14 @@ const createDayTemplate = (counter, date) => {
   );
 };
 
-export default class Day {
+export class Day extends AbstractComponent {
   constructor(counter, date) {
+    super();
     this._counter = counter;
     this._date = date;
-    this._element = null;
   }
 
   getTemplate() {
     return createDayTemplate(this._counter, this._date);
-  }
-
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate());
-    }
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
   }
 }

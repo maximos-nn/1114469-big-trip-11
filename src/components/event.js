@@ -1,4 +1,5 @@
-import {formatDuration, formatTime, capitalizeFirstLetter, createElement} from "../utils";
+import {AbstractComponent} from "./abstract-component";
+import {formatDuration, formatTime, capitalizeFirstLetter} from "../utils/format";
 
 const OFFERS_COUNT = 3;
 
@@ -66,24 +67,17 @@ const createEventTemplate = (event) => {
   );
 };
 
-export default class Event {
+export class Event extends AbstractComponent {
   constructor(event) {
+    super();
     this._event = event;
-    this._element = null;
   }
 
   getTemplate() {
     return createEventTemplate(this._event);
   }
 
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate());
-    }
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
+  setEditButtonClickHandler(handler) {
+    this.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, handler);
   }
 }

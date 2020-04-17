@@ -1,4 +1,4 @@
-import {getRandomInteger, getRandomIntegers} from "../utils";
+import {getRandomInteger, getRandomIntegers} from "../utils/random";
 
 const offers = [
   {title: `Add luggage`, name: `luggage`, price: 30, isSelected: true},

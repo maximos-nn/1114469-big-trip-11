@@ -1,4 +1,4 @@
-import {getRandomInteger, getRandomIntegers} from "../utils";
+import {getRandomInteger, getRandomIntegers} from "../utils/random";
 
 const lorem = [
   `Lorem ipsum dolor sit amet, consectetur adipiscing elit.`,
