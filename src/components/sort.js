@@ -46,6 +46,7 @@ export class Sort extends AbstractComponent {
   constructor() {
     super();
     this._currentSortType = SortType.EVENT;
+    this._subscribes = [];
   }
 
   getTemplate() {
