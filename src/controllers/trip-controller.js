@@ -88,6 +88,14 @@ export class TripController {
     this._dayListComponent = new DayList();
   }
 
+  _renderDays(tripEventsElement, events, eventTypes, sortType) {
+    // Список дней и контейнер для точек маршрута. Выводим только при наличии точек.
+    // Должен содержать как минимум один элемент. В режиме сортировки используется только один элемент.
+    render(tripEventsElement, this._dayListComponent);
+    const sortedEvents = sortEvents(events, sortType);
+    renderEvents(sortedEvents, eventTypes, this._dayListComponent.getElement());
+  }
+
   render(events, eventTypes) {
     // Основной контейнер для точек маршрута.
     const tripEventsElement = this._container;
@@ -103,19 +111,11 @@ export class TripController {
     // Форма создания/редактирования точки в режиме создания. Выводим в самом начале.
     // render(tripEventsElement, new EditForm(eventTypes));
 
-    const renderDays = (sortType) => {
-      // Список дней и контейнер для точек маршрута. Выводим только при наличии точек.
-      // Должен содержать как минимум один элемент. В режиме сортировки используется только один элемент.
-      render(tripEventsElement, this._dayListComponent);
-      const sortedEvents = sortEvents(events, sortType);
-      renderEvents(sortedEvents, eventTypes, this._dayListComponent.getElement());
-    };
-
-    renderDays(this._sortComponent.getSortType());
+    this._renderDays(tripEventsElement, events, eventTypes, this._sortComponent.getSortType());
 
     this._sortComponent.setSortTypeChangeHandler((newSortType) => {
       remove(this._dayListComponent);
-      renderDays(newSortType);
+      this._renderDays(tripEventsElement, events, eventTypes, newSortType);
     });
   }
 }

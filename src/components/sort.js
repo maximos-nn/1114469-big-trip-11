@@ -46,7 +46,6 @@ export class Sort extends AbstractComponent {
   constructor() {
     super();
     this._currentSortType = SortType.EVENT;
-    this._subscribes = [];
   }
 
   getTemplate() {
@@ -56,7 +55,7 @@ export class Sort extends AbstractComponent {
   getElement() {
     if (!this._element) {
       this._element = createElement(this.getTemplate());
-      this._subscribes = [];
+      this._handler = null;
       this._element.addEventListener(`change`, () => {
         this._onChange();
       }); // debounce?
@@ -71,7 +70,9 @@ export class Sort extends AbstractComponent {
     }
     this._element.querySelector(`.trip-sort__item--day`).textContent = newSortType === SortType.EVENT ? `Day` : ``;
     this._currentSortType = newSortType;
-    this._subscribes.forEach((subscribe) => subscribe(newSortType));
+    if (this._handler) {
+      this._handler(newSortType);
+    }
   }
 
   getSortType() {
@@ -80,7 +81,7 @@ export class Sort extends AbstractComponent {
 
   setSortTypeChangeHandler(handler) {
     if (typeof handler === `function`) {
-      this._subscribes.push(handler);
+      this._handler = handler;
     }
   }
 }
