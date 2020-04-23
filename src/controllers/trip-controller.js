@@ -113,13 +113,13 @@ export class TripController {
     });
   }
 
-  _onDataChange(oldData, newData) {
+  _onDataChange(eventController, oldData, newData) {
     const index = this._events.findIndex((it) => it === oldData);
     if (index === -1) {
       return;
     }
     this._events = [].concat(this._events.slice(0, index), newData, this._events.slice(index + 1));
-    this._renderDays(this._sortComponent.getSortType());
+    eventController.render(this._events[index]);
   }
 
   _onViewChange() {

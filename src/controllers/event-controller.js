@@ -21,6 +21,9 @@ export class EventController {
   }
 
   render(event) {
+    const oldEventComponent = this._eventComponent;
+    const oldEventEditComponent = this._eventEditComponent;
+
     this._eventComponent = new Event(event);
     this._eventEditComponent = new EditForm(this._eventTypes, event, this._destinations);
 
@@ -35,10 +38,15 @@ export class EventController {
     });
 
     this._eventEditComponent.setFavoriteButtonClickHandler(() => {
-      this._onDataChange(event, Object.assign({}, event, {isFavorite: !event.isFavorite}));
+      this._onDataChange(this, event, Object.assign({}, event, {isFavorite: !event.isFavorite}));
     });
 
-    render(this._container, this._eventComponent);
+    if (oldEventComponent && oldEventEditComponent) {
+      replace(this._eventComponent, oldEventComponent);
+      replace(this._eventEditComponent, oldEventEditComponent);
+    } else {
+      render(this._container, this._eventComponent);
+    }
   }
 
   _replaceEventToEdit() {
