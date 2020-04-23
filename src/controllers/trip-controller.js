@@ -1,10 +1,9 @@
 import {Day} from "../components/day";
 import {DayList} from "../components/days-list";
-import {EditForm} from "../components/edit-form";
-import {Event} from "../components/event";
+import {EventController} from "./event-controller";
 import {NoEvents} from "../components/no-events";
 import {Sort, SortType} from "../components/sort";
-import {render, replace, remove} from "../utils/render";
+import {render, remove} from "../utils/render";
 import {getDate} from "../utils/common";
 
 const mapEventToDate = (resultMap, event) => {
@@ -20,7 +19,8 @@ const mapEventToDate = (resultMap, event) => {
 
 const groupByDays = (events) => events.reduce(mapEventToDate, new Map());
 
-const renderEvents = (events, eventTypes, container) => {
+const renderEvents = (events, eventTypes, destinations, container, onDataChange, onViewChange) => {
+  const controllers = [];
   let currentDay = 1;
   for (const [key, dayEvents] of events) { // [...eventsByDays.keys()].forEach((date, index) => {});
 
@@ -33,40 +33,18 @@ const renderEvents = (events, eventTypes, container) => {
 
     // Точки маршрута.
     for (const event of dayEvents) {
-
-      const replaceEventToEdit = () => {
-        replace(eventEditComponent, eventComponent);
-      };
-
-      const replaceEditToEvent = () => {
-        replace(eventComponent, eventEditComponent);
-      };
-
-      const onEscKeyDown = (evt) => {
-        const isEscKey = evt.key === `Escape` || evt.key === `Esc`;
-        if (isEscKey) {
-          replaceEditToEvent();
-          document.removeEventListener(`keydown`, onEscKeyDown);
-        }
-      };
-
-      const eventComponent = new Event(event);
-      eventComponent.setEditButtonClickHandler(() => {
-        replaceEventToEdit();
-        document.addEventListener(`keydown`, onEscKeyDown);
-      });
-
-      const eventEditComponent = new EditForm(eventTypes, event);
-      eventEditComponent.setSubmitHandler((evt) => {
-        evt.preventDefault();
-        replaceEditToEvent();
-        document.removeEventListener(`keydown`, onEscKeyDown);
-      });
-
-      render(tripEventListElement, eventComponent);
-
+      const eventController = new EventController(
+          tripEventListElement,
+          eventTypes,
+          destinations,
+          onDataChange,
+          onViewChange
+      );
+      eventController.render(event);
+      controllers.push(eventController);
     }
   }
+  return controllers;
 };
 
 const sortEvents = (events, sortType) => {
@@ -83,20 +61,36 @@ const sortEvents = (events, sortType) => {
 export class TripController {
   constructor(container) {
     this._container = container;
+    this._events = [];
+    this._eventTypes = [];
     this._noEventsComponent = new NoEvents();
     this._sortComponent = new Sort();
     this._dayListComponent = new DayList();
+    this._onDataChange = this._onDataChange.bind(this);
+    this._onViewChange = this._onViewChange.bind(this);
+    this._eventControllers = [];
   }
 
-  _renderDays(tripEventsElement, events, eventTypes, sortType) {
+  _renderDays(sortType) {
     // Список дней и контейнер для точек маршрута. Выводим только при наличии точек.
     // Должен содержать как минимум один элемент. В режиме сортировки используется только один элемент.
-    render(tripEventsElement, this._dayListComponent);
-    const sortedEvents = sortEvents(events, sortType);
-    renderEvents(sortedEvents, eventTypes, this._dayListComponent.getElement());
+    render(this._container, this._dayListComponent);
+    const sortedEvents = sortEvents(this._events, sortType);
+    this._eventControllers = renderEvents(
+        sortedEvents,
+        this._eventTypes,
+        this._destinations,
+        this._dayListComponent.getElement(),
+        this._onDataChange,
+        this._onViewChange
+    );
   }
 
-  render(events, eventTypes) {
+  render(events, eventTypes, destinations) {
+    this._events = events;
+    this._eventTypes = eventTypes;
+    this._destinations = destinations;
+
     // Основной контейнер для точек маршрута.
     const tripEventsElement = this._container;
 
@@ -111,11 +105,24 @@ export class TripController {
     // Форма создания/редактирования точки в режиме создания. Выводим в самом начале.
     // render(tripEventsElement, new EditForm(eventTypes));
 
-    this._renderDays(tripEventsElement, events, eventTypes, this._sortComponent.getSortType());
+    this._renderDays(this._sortComponent.getSortType());
 
     this._sortComponent.setSortTypeChangeHandler((newSortType) => {
       remove(this._dayListComponent);
-      this._renderDays(tripEventsElement, events, eventTypes, newSortType);
+      this._renderDays(newSortType);
     });
+  }
+
+  _onDataChange(eventController, oldData, newData) {
+    const index = this._events.findIndex((it) => it === oldData);
+    if (index === -1) {
+      return;
+    }
+    this._events = [].concat(this._events.slice(0, index), newData, this._events.slice(index + 1));
+    eventController.render(this._events[index]);
+  }
+
+  _onViewChange() {
+    this._eventControllers.forEach((it) => it.setDefaultView());
   }
 }

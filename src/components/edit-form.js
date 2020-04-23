@@ -1,4 +1,4 @@
-import {AbstractComponent} from "./abstract-component";
+import {AbstractSmartComponent} from "./abstract-smart-component";
 import {capitalizeFirstLetter, formatDate, formatTime} from "../utils/format";
 import {generateDefaultEvent} from "../mocks/event";
 
@@ -115,14 +115,15 @@ const createEditModeControls = (isFavorite) => {
   );
 };
 
-const createEditFormTemplate = (eventTypes, event) => {
+const createEditFormTemplate = (eventTypes, event, typeOptions, currentDestination, destinationOptions) => {
   const isEditMode = !!event;
   if (!isEditMode) {
     event = generateDefaultEvent();
   }
-  const {type, preposition, destination, startDate, endDate, price, offers, destinationInfo, isFavorite} = event;
+  const {startDate, endDate, price, isFavorite} = event;
+  const {type, preposition, offers} = typeOptions;
+  const {destination, destinationInfo} = currentDestination;
 
-  const destinationOptions = [`Amsterdam`, `Geneva`, `Chamonix`, `Saint Petersburg`];
   const destinationLabelText = `${capitalizeFirstLetter(type)} ${preposition}`;
   const positionClass = isEditMode ? `` : `trip-events__item`;
   const resetButtonCaption = isEditMode ? `Delete` : `Cancel`;
@@ -186,18 +187,84 @@ const createEditFormTemplate = (eventTypes, event) => {
   );
 };
 
-export class EditForm extends AbstractComponent {
-  constructor(eventTypes, event) {
+export class EditForm extends AbstractSmartComponent {
+  constructor(eventTypes, event, destinations) {
     super();
     this._eventTypes = eventTypes;
     this._event = event;
+    this._isEditMode = !!event;
+    this._type = event.type;
+    this._destination = event.destination;
+    this._destinationInfoMap = new Map(destinations.map((it) => [it.destination, it.destinationInfo]));
+    this._submitHandler = null;
+    this._favoriteButtonClickHandler = null;
+    this._setEventHandlers();
   }
 
   getTemplate() {
-    return createEditFormTemplate(this._eventTypes, this._event);
+    return createEditFormTemplate(
+        this._eventTypes,
+        this._event,
+        this._getEventTypeData(),
+        {
+          destination: this._destination,
+          destinationInfo: this._destinationInfoMap.get(this._destination)
+        },
+        Array.from(this._destinationInfoMap.keys())
+    );
   }
 
   setSubmitHandler(handler) {
     this.getElement().addEventListener(`submit`, handler);
+    this._submitHandler = handler;
+  }
+
+  setFavoriteButtonClickHandler(handler) {
+    if (this._isEditMode) {
+      this.getElement().querySelector(`#event-favorite-1`).addEventListener(`click`, handler);
+      this._favoriteButtonClickHandler = handler;
+    }
+  }
+
+  recoveryListeners() {
+    this.setSubmitHandler(this._submitHandler);
+    this.setFavoriteButtonClickHandler(this._favoriteButtonClickHandler);
+    this._setEventHandlers();
+  }
+
+  reset() {
+    this._type = this._event.type;
+    this._destination = this._event.destination;
+    this.rerender();
+  }
+
+  _setEventHandlers() {
+    const element = this.getElement();
+
+    Array.from(element.querySelectorAll(`input[name="event-type"]`)).forEach((input) =>{
+      input.addEventListener(`change`, (evt) => {
+        this._type = evt.target.value;
+        this.rerender();
+      });
+    });
+
+    element.querySelector(`#event-destination-1`).addEventListener(`change`, (evt) => {
+      if (this._destinationInfoMap.has(evt.target.value)) {
+        this._destination = evt.target.value;
+        this.rerender();
+      }
+    });
+  }
+
+  _getEventTypeData() {
+    for (const group of this._eventTypes) {
+      const {types, preposition, offers} = group;
+      const index = types.findIndex((type) => type === this._type);
+      if (index === -1) {
+        continue;
+      }
+      return {type: this._type, preposition, offers: offers[this._type]};
+    }
+    return {};
   }
 }
