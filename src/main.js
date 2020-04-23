@@ -30,7 +30,7 @@ render(tripControlsElement, new Filter(generateFilter()));
 
 const tripEventsElement = document.querySelector(`.trip-events`);
 const tripController = new TripController(tripEventsElement);
-tripController.render(events, eventTypes);
+tripController.render(events, eventTypes, destinations);
 
 // Основные операции с данными.
 // 1. Сортировка по дате и времени начала.
