@@ -261,14 +261,12 @@ export class EditForm extends AbstractSmartComponent {
       allowInput: true,
       enableTime: true,
       [`time_24hr`]: true,
-      altFormat: `d/m/Y H:i`,
-      defaultDate: this._event.startDate || `today`,
+      altFormat: `d/m/Y H:i`
     };
     const startDateElement = this.getElement().querySelector(`#event-start-time-1`);
-    this._startFlatpickr = flatpickr(startDateElement, options);
+    this._startFlatpickr = flatpickr(startDateElement, Object.assign({}, options, {defaultDate: this._event.startDate || `today`}));
     const endDateElement = this.getElement().querySelector(`#event-end-time-1`);
-    options.defaultDate = this._event.endDate || `today`;
-    this._endFlatpickr = flatpickr(endDateElement, options);
+    this._endFlatpickr = flatpickr(endDateElement, Object.assign({}, options, {defaultDate: this._event.endDate || `today`}));
   }
 
   _setEventHandlers() {
