@@ -256,24 +256,19 @@ export class EditForm extends AbstractSmartComponent {
       this._endFlatpickr = null;
     }
 
-    const startDateElement = this.getElement().querySelector(`#event-start-time-1`);
-    this._startFlatpickr = flatpickr(startDateElement, {
+    const options = {
       altInput: true,
       allowInput: true,
       enableTime: true,
       [`time_24hr`]: true,
       altFormat: `d/m/Y H:i`,
       defaultDate: this._event.startDate || `today`,
-    });
+    };
+    const startDateElement = this.getElement().querySelector(`#event-start-time-1`);
+    this._startFlatpickr = flatpickr(startDateElement, options);
     const endDateElement = this.getElement().querySelector(`#event-end-time-1`);
-    this._endFlatpickr = flatpickr(endDateElement, {
-      altInput: true,
-      allowInput: true,
-      enableTime: true,
-      [`time_24hr`]: true,
-      altFormat: `d/m/Y H:i`,
-      defaultDate: this._event.endDate || `today`,
-    });
+    options.defaultDate = this._event.endDate || `today`;
+    this._endFlatpickr = flatpickr(endDateElement, options);
   }
 
   _setEventHandlers() {
