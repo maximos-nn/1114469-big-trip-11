@@ -1,6 +1,8 @@
 import {AbstractSmartComponent} from "./abstract-smart-component";
 import {capitalizeFirstLetter, formatDate, formatTime} from "../utils/format";
 import {generateDefaultEvent} from "../mocks/event";
+import flatpickr from "flatpickr";
+import "flatpickr/dist/flatpickr.min.css";
 
 const createEventTypeMarkup = (type, currentType) => {
   const checkedAttrib = type === currentType ? `checked` : ``;
@@ -199,6 +201,9 @@ export class EditForm extends AbstractSmartComponent {
     this._submitHandler = null;
     this._favoriteButtonClickHandler = null;
     this._setEventHandlers();
+    this._startFlatpickr = null;
+    this._endFlatpickr = null;
+    this._applyFlatpickr();
   }
 
   getTemplate() {
@@ -236,6 +241,33 @@ export class EditForm extends AbstractSmartComponent {
     this._type = this._event.type;
     this._destination = this._event.destination;
     this.rerender();
+  }
+
+  rerender() {
+    super.rerender();
+    this._applyFlatpickr();
+  }
+
+  _applyFlatpickr() {
+    if (this._flatpickr) {
+      this._startFlatpickr.destroy();
+      this._endFlatpickr.destroy();
+      this._startFlatpickr = null;
+      this._endFlatpickr = null;
+    }
+
+    const startDateElement = this.getElement().querySelector(`#event-start-time-1`);
+    this._startFlatpickr = flatpickr(startDateElement, {
+      altInput: true,
+      allowInput: true,
+      defaultDate: this._event.startDate || `today`,
+    });
+    const endDateElement = this.getElement().querySelector(`#event-end-time-1`);
+    this._endFlatpickr = flatpickr(endDateElement, {
+      altInput: true,
+      allowInput: true,
+      defaultDate: this._event.endDate || `today`,
+    });
   }
 
   _setEventHandlers() {
