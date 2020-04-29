@@ -19,6 +19,7 @@ const generateEvent = (eventTypes, destinations) => {
   const type = getRandomArrayElement(types);
   const {destination, destinationInfo} = getRandomArrayElement(destinations);
   return {
+    id: String(new Date() + Math.random()),
     type,
     preposition,
     destination,
