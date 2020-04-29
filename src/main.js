@@ -1,3 +1,4 @@
+import {Events} from "./models/events";
 import {Filter} from "./components/filter";
 import {Menu} from "./components/menu";
 import {TripCost} from "./components/trip-cost";
@@ -15,6 +16,8 @@ const EVENTS_COUNT = 20;
 const eventTypes = generateEventTypes();
 const destinations = generateDestinations();
 const events = generateEvents(EVENTS_COUNT, eventTypes, destinations).sort((a, b) => a.startDate - b.startDate);
+const eventsModel = new Events();
+eventsModel.events = events;
 
 // Загловок.
 const tripMainElement = document.querySelector(`.trip-main`);
@@ -29,8 +32,8 @@ render(tripControlsElement.querySelector(`h2`), new Menu(generateMenu()), Render
 render(tripControlsElement, new Filter(generateFilter()));
 
 const tripEventsElement = document.querySelector(`.trip-events`);
-const tripController = new TripController(tripEventsElement);
-tripController.render(events, eventTypes, destinations);
+const tripController = new TripController(tripEventsElement, eventsModel);
+tripController.render(eventTypes, destinations);
 
 // Основные операции с данными.
 // 1. Сортировка по дате и времени начала.

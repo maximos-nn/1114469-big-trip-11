@@ -59,9 +59,9 @@ const sortEvents = (events, sortType) => {
 };
 
 export class TripController {
-  constructor(container) {
+  constructor(container, eventsModel) {
     this._container = container;
-    this._events = [];
+    this._eventsModel = eventsModel;
     this._eventTypes = [];
     this._noEventsComponent = new NoEvents();
     this._sortComponent = new Sort();
@@ -75,7 +75,7 @@ export class TripController {
     // Список дней и контейнер для точек маршрута. Выводим только при наличии точек.
     // Должен содержать как минимум один элемент. В режиме сортировки используется только один элемент.
     render(this._container, this._dayListComponent);
-    const sortedEvents = sortEvents(this._events, sortType);
+    const sortedEvents = sortEvents(this._eventsModel.events, sortType);
     this._eventControllers = renderEvents(
         sortedEvents,
         this._eventTypes,
@@ -86,15 +86,14 @@ export class TripController {
     );
   }
 
-  render(events, eventTypes, destinations) {
-    this._events = events;
+  render(eventTypes, destinations) {
     this._eventTypes = eventTypes;
     this._destinations = destinations;
 
     // Основной контейнер для точек маршрута.
     const tripEventsElement = this._container;
 
-    if (!events.length) {
+    if (!this._eventsModel.events.length) {
       render(tripEventsElement, this._noEventsComponent);
       return;
     }
@@ -114,12 +113,8 @@ export class TripController {
   }
 
   _onDataChange(eventController, oldData, newData) {
-    const index = this._events.findIndex((it) => it === oldData);
-    if (index === -1) {
-      return;
-    }
-    this._events = [].concat(this._events.slice(0, index), newData, this._events.slice(index + 1));
-    eventController.render(this._events[index]);
+    this._eventsModel.updateEvent(oldData.id, newData);
+    eventController.render(newData);
   }
 
   _onViewChange() {
