@@ -272,7 +272,7 @@ export class EditForm extends AbstractSmartComponent {
   _setEventHandlers() {
     const element = this.getElement();
 
-    Array.from(element.querySelectorAll(`input[name="event-type"]`)).forEach((input) =>{
+    Array.from(element.querySelectorAll(`input[name="event-type"]`)).forEach((input) => {
       input.addEventListener(`change`, (evt) => {
         this._type = evt.target.value;
         this.rerender();
