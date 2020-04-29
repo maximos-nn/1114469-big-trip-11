@@ -1,5 +1,5 @@
 import {Events} from "./models/events";
-import {Filter} from "./components/filter";
+import {FilterController} from "./controllers/filter-controller";
 import {Menu} from "./components/menu";
 import {TripCost} from "./components/trip-cost";
 import {TripController} from "./controllers/trip-controller";
@@ -8,7 +8,6 @@ import {generateEventTypes} from "./mocks/event-type";
 import {generateDestinations} from "./mocks/destination";
 import {generateEvents} from "./mocks/event";
 import {generateMenu} from "./mocks/menu";
-import {generateFilter} from "./mocks/filter";
 import {render, RenderPosition} from "./utils/render";
 
 const EVENTS_COUNT = 20;
@@ -29,7 +28,8 @@ render(tripInfoElement, new TripCost(events));
 // Блок элементов управления: навигация и фильтры.
 const tripControlsElement = tripMainElement.querySelector(`.trip-main__trip-controls`);
 render(tripControlsElement.querySelector(`h2`), new Menu(generateMenu()), RenderPosition.AFTEREND);
-render(tripControlsElement, new Filter(generateFilter()));
+const filterController = new FilterController(tripControlsElement, eventsModel);
+filterController.render();
 
 const tripEventsElement = document.querySelector(`.trip-events`);
 const tripController = new TripController(tripEventsElement, eventsModel);
