@@ -200,7 +200,6 @@ export class EditForm extends AbstractSmartComponent {
     this._destinationInfoMap = new Map(destinations.map((it) => [it.destination, it.destinationInfo]));
     this._submitHandler = null;
     this._favoriteButtonClickHandler = null;
-    this._setEventHandlers();
     this._startFlatpickr = null;
     this._endFlatpickr = null;
     this._applyFlatpickr();
@@ -220,21 +219,11 @@ export class EditForm extends AbstractSmartComponent {
   }
 
   setSubmitHandler(handler) {
-    this.getElement().addEventListener(`submit`, handler);
     this._submitHandler = handler;
   }
 
   setFavoriteButtonClickHandler(handler) {
-    if (this._isEditMode) {
-      this.getElement().querySelector(`#event-favorite-1`).addEventListener(`click`, handler);
-      this._favoriteButtonClickHandler = handler;
-    }
-  }
-
-  recoveryListeners() {
-    this.setSubmitHandler(this._submitHandler);
-    this.setFavoriteButtonClickHandler(this._favoriteButtonClickHandler);
-    this._setEventHandlers();
+    this._favoriteButtonClickHandler = handler;
   }
 
   reset() {
@@ -269,7 +258,7 @@ export class EditForm extends AbstractSmartComponent {
     this._endFlatpickr = flatpickr(endDateElement, Object.assign({}, options, {defaultDate: this._event.endDate || `today`}));
   }
 
-  _setEventHandlers() {
+  _setUIHandlers() {
     const element = this.getElement();
 
     Array.from(element.querySelectorAll(`input[name="event-type"]`)).forEach((input) => {
@@ -285,6 +274,20 @@ export class EditForm extends AbstractSmartComponent {
         this.rerender();
       }
     });
+
+    element.addEventListener(`submit`, (evt) => {
+      if (this._submitHandler) {
+        this._submitHandler(evt);
+      }
+    });
+
+    if (this._isEditMode) {
+      element.querySelector(`#event-favorite-1`).addEventListener(`click`, (evt) => {
+        if (this._favoriteButtonClickHandler) {
+          this._favoriteButtonClickHandler(evt);
+        }
+      });
+    }
   }
 
   _getEventTypeData() {
