@@ -14,6 +14,7 @@ export class FilterController {
     this._activeFilterType = FilterType.EVERYTHING;
     this._filterComponent = null;
 
+    this._model.filter = this._activeFilterType;
     this._onFilterTypeChange = this._onFilterTypeChange.bind(this);
   }
 
@@ -39,5 +40,6 @@ export class FilterController {
 
   _onFilterTypeChange(newFilterType) {
     this._activeFilterType = newFilterType;
+    this._model.filter = newFilterType;
   }
 }
