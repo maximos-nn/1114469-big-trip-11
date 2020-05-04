@@ -232,13 +232,24 @@ export class EditForm extends AbstractSmartComponent {
     this.rerender();
   }
 
+  removeElement() {
+    if (this._startFlatpickr && this._endFlatpickr) {
+      this._startFlatpickr.destroy();
+      this._endFlatpickr.destroy();
+      this._startFlatpickr = null;
+      this._endFlatpickr = null;
+    }
+
+    super.removeElement();
+  }
+
   rerender() {
     super.rerender();
     this._applyFlatpickr();
   }
 
   _applyFlatpickr() {
-    if (this._flatpickr) {
+    if (this._startFlatpickr && this._endFlatpickr) {
       this._startFlatpickr.destroy();
       this._endFlatpickr.destroy();
       this._startFlatpickr = null;

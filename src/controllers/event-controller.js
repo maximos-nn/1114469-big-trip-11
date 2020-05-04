@@ -1,6 +1,6 @@
 import {EditForm} from "../components/edit-form";
 import {Event} from "../components/event";
-import {render, replace} from "../utils/render";
+import {render, replace, remove} from "../utils/render";
 
 const Mode = {
   DEFAULT: `default`,
@@ -44,6 +44,8 @@ export class EventController {
     if (oldEventComponent && oldEventEditComponent) {
       replace(this._eventComponent, oldEventComponent);
       replace(this._eventEditComponent, oldEventEditComponent);
+      remove(oldEventComponent);
+      remove(oldEventEditComponent);
     } else {
       render(this._container, this._eventComponent);
     }
@@ -73,5 +75,11 @@ export class EventController {
     if (this._mode !== Mode.DEFAULT) {
       this._replaceEditToEvent();
     }
+  }
+
+  cleanUp() {
+    remove(this._eventComponent);
+    remove(this._eventEditComponent);
+    document.removeEventListener(`keydown`, this._onEscKeyDown);
   }
 }

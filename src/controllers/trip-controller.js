@@ -107,9 +107,15 @@ export class TripController {
     this._renderDays(this._sortComponent.getSortType());
 
     this._sortComponent.setSortTypeChangeHandler((newSortType) => {
+      this._removeEvents();
       remove(this._dayListComponent);
       this._renderDays(newSortType);
     });
+  }
+
+  _removeEvents() {
+    this._eventControllers.forEach((controller) => controller.cleanUp());
+    this._eventControllers = [];
   }
 
   _onDataChange(eventController, oldData, newData) {
