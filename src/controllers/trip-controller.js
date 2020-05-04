@@ -68,7 +68,10 @@ export class TripController {
     this._dayListComponent = new DayList();
     this._onDataChange = this._onDataChange.bind(this);
     this._onViewChange = this._onViewChange.bind(this);
+    this._onFilterChange = this._onFilterChange.bind(this);
     this._eventControllers = [];
+
+    this._eventsModel.setFilterChangeHandler(this._onFilterChange);
   }
 
   _renderDays(sortType) {
@@ -98,8 +101,12 @@ export class TripController {
       return;
     }
 
+    this._updateContainer();
+  }
+
+  _updateContainer() {
     // Форма сортировки, заголовки столбцов. Выводим только при наличии точек маршрута.
-    render(tripEventsElement, this._sortComponent);
+    render(this._container, this._sortComponent);
 
     // Форма создания/редактирования точки в режиме создания. Выводим в самом начале.
     // render(tripEventsElement, new EditForm(eventTypes));
@@ -125,5 +132,13 @@ export class TripController {
 
   _onViewChange() {
     this._eventControllers.forEach((it) => it.setDefaultView());
+  }
+
+  _onFilterChange() {
+    remove(this._sortComponent);
+    this._sortComponent = new Sort();
+    this._removeEvents();
+    remove(this._dayListComponent);
+    this._updateContainer();
   }
 }
