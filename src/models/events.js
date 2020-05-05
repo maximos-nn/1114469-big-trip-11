@@ -1,3 +1,5 @@
+import {FilterType} from "../controllers/filter-controller";
+
 export class Events {
   constructor() {
     this._events = [];
@@ -6,7 +8,14 @@ export class Events {
   }
 
   get events() {
-    return this._events;
+    switch (this._activeFilterType) {
+      case FilterType.FUTURE:
+        return this._events.filter((event) => event.startDate > new Date());
+      case FilterType.PAST:
+        return this._events.filter((event) => event.startDate < new Date());
+      default:
+        return this._events;
+    }
   }
 
   set events(events) {

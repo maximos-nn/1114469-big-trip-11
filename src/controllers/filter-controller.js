@@ -1,7 +1,7 @@
 import {Filter} from "../components/filter";
 import {render, replace} from "../utils/render";
 
-const FilterType = {
+export const FilterType = {
   EVERYTHING: `everything`,
   FUTURE: `future`,
   PAST: `past`
