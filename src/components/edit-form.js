@@ -199,6 +199,7 @@ export class EditForm extends AbstractSmartComponent {
     this._destination = event.destination;
     this._destinationInfoMap = new Map(destinations.map((it) => [it.destination, it.destinationInfo]));
     this._submitHandler = null;
+    this._resetHandler = null;
     this._favoriteButtonClickHandler = null;
     this._startFlatpickr = null;
     this._endFlatpickr = null;
@@ -220,6 +221,10 @@ export class EditForm extends AbstractSmartComponent {
 
   setSubmitHandler(handler) {
     this._submitHandler = handler;
+  }
+
+  setResetHandler(handler) {
+    this._resetHandler = handler;
   }
 
   setFavoriteButtonClickHandler(handler) {
@@ -289,6 +294,12 @@ export class EditForm extends AbstractSmartComponent {
     element.addEventListener(`submit`, (evt) => {
       if (this._submitHandler) {
         this._submitHandler(evt);
+      }
+    });
+
+    element.addEventListener(`reset`, (evt) => {
+      if (this._resetHandler) {
+        this._resetHandler(evt);
       }
     });
 

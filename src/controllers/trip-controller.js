@@ -93,41 +93,57 @@ export class TripController {
     this._eventTypes = eventTypes;
     this._destinations = destinations;
 
-    // Основной контейнер для точек маршрута.
-    const tripEventsElement = this._container;
+    this._renderContainer();
+  }
 
+  _renderContainer() {
     if (!this._eventsModel.events.length) {
-      render(tripEventsElement, this._noEventsComponent);
+      render(this._container, this._noEventsComponent);
       return;
     }
 
-    this._updateContainer();
-  }
-
-  _updateContainer() {
     // Форма сортировки, заголовки столбцов. Выводим только при наличии точек маршрута.
     render(this._container, this._sortComponent);
+    this._sortComponent.setSortTypeChangeHandler((newSortType) => {
+      this._updateEvents(newSortType);
+    });
 
     // Форма создания/редактирования точки в режиме создания. Выводим в самом начале.
     // render(tripEventsElement, new EditForm(eventTypes));
 
     this._renderDays(this._sortComponent.getSortType());
+  }
 
-    this._sortComponent.setSortTypeChangeHandler((newSortType) => {
-      this._removeEvents();
-      remove(this._dayListComponent);
-      this._renderDays(newSortType);
-    });
+  _updateContainer() {
+    remove(this._sortComponent);
+    this._sortComponent = new Sort();
+    this._removeEvents();
+    this._renderContainer();
   }
 
   _removeEvents() {
     this._eventControllers.forEach((controller) => controller.cleanUp());
     this._eventControllers = [];
+    remove(this._dayListComponent);
+  }
+
+  _updateEvents(sortType) {
+    this._removeEvents();
+    this._renderDays(sortType);
   }
 
   _onDataChange(eventController, oldData, newData) {
-    this._eventsModel.updateEvent(oldData.id, newData);
-    eventController.render(newData);
+    if (newData === null) {
+      this._eventsModel.removeEvent(oldData.id);
+      if (this._eventsModel.events.length) {
+        this._updateEvents(this._sortComponent.getSortType());
+      } else {
+        this._updateContainer();
+      }
+    } else {
+      this._eventsModel.updateEvent(oldData.id, newData);
+      eventController.render(newData);
+    }
   }
 
   _onViewChange() {
@@ -135,10 +151,6 @@ export class TripController {
   }
 
   _onFilterChange() {
-    remove(this._sortComponent);
-    this._sortComponent = new Sort();
-    this._removeEvents();
-    remove(this._dayListComponent);
     this._updateContainer();
   }
 }

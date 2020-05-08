@@ -37,6 +37,11 @@ export class EventController {
       this._replaceEditToEvent();
     });
 
+    this._eventEditComponent.setResetHandler((evt) => {
+      evt.preventDefault();
+      this._onDataChange(this, event, null);
+    });
+
     this._eventEditComponent.setFavoriteButtonClickHandler(() => {
       this._onDataChange(this, event, Object.assign({}, event, {isFavorite: !event.isFavorite}));
     });
