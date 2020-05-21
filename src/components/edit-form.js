@@ -218,6 +218,7 @@ export class EditForm extends AbstractSmartComponent {
     this._submitHandler = null;
     this._resetHandler = null;
     this._favoriteButtonClickHandler = null;
+    this._closeButtonClickHandler = null;
     this._startFlatpickr = null;
     this._endFlatpickr = null;
     this._applyFlatpickr();
@@ -246,6 +247,10 @@ export class EditForm extends AbstractSmartComponent {
 
   setFavoriteButtonClickHandler(handler) {
     this._favoriteButtonClickHandler = handler;
+  }
+
+  setCloseButtonClickHandler(handler) {
+    this._closeButtonClickHandler = handler;
   }
 
   reset() {
@@ -326,6 +331,12 @@ export class EditForm extends AbstractSmartComponent {
       element.querySelector(`#event-favorite-1`).addEventListener(`click`, (evt) => {
         if (this._favoriteButtonClickHandler) {
           this._favoriteButtonClickHandler(evt);
+        }
+      });
+
+      element.querySelector(`.event__rollup-btn`).addEventListener(`click`, (evt) => {
+        if (this._closeButtonClickHandler) {
+          this._closeButtonClickHandler(evt);
         }
       });
     }

@@ -52,6 +52,10 @@ export class EventController {
       this._onDataChange(this, event, Object.assign({}, event, {isFavorite: !event.isFavorite}));
     });
 
+    this._eventEditComponent.setCloseButtonClickHandler(() => {
+      this._replaceEditToEvent();
+    });
+
     switch (this._mode) {
       case Mode.ADDING:
         if (oldEventComponent && oldEventEditComponent) {
