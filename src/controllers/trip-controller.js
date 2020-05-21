@@ -1,6 +1,7 @@
 import {Day} from "../components/day";
 import {DayList} from "../components/days-list";
 import {EventController} from "./event-controller";
+import {EmptyEvent} from "../components/edit-form";
 import {NoEvents} from "../components/no-events";
 import {Sort, SortType} from "../components/sort";
 import {render, remove} from "../utils/render";
@@ -70,6 +71,8 @@ export class TripController {
     this._onViewChange = this._onViewChange.bind(this);
     this._onFilterChange = this._onFilterChange.bind(this);
     this._eventControllers = [];
+    this._newEvent = null;
+    this._onNewEventHandled = null;
 
     this._eventsModel.setFilterChangeHandler(this._onFilterChange);
   }
@@ -97,8 +100,14 @@ export class TripController {
   }
 
   _renderContainer() {
-    if (!this._eventsModel.events.length) {
+    if (!(this._eventsModel.events.length || this._newEvent)) {
       render(this._container, this._noEventsComponent);
+      return;
+    }
+
+    if (!this._eventsModel.events.length) {
+      remove(this._noEventsComponent);
+      this._newEvent.render(EmptyEvent);
       return;
     }
 
@@ -109,7 +118,9 @@ export class TripController {
     });
 
     // Форма создания/редактирования точки в режиме создания. Выводим в самом начале.
-    // render(tripEventsElement, new EditForm(eventTypes));
+    if (this._newEvent) {
+      this._newEvent.render(EmptyEvent);
+    }
 
     this._renderDays(this._sortComponent.getSortType());
   }
@@ -133,7 +144,15 @@ export class TripController {
   }
 
   _onDataChange(eventController, oldData, newData) {
-    if (newData === null) {
+    if (oldData === EmptyEvent) {
+      this._newEvent = null;
+      if (newData !== null) {
+        this._eventsModel.addEvent(newData);
+      }
+      eventController.cleanUp();
+      this._updateContainer();
+      this._onNewEventHandled();
+    } else if (newData === null) {
       this._eventsModel.removeEvent(oldData.id);
       if (this._eventsModel.events.length) {
         this._updateEvents(this._sortComponent.getSortType());
@@ -151,6 +170,21 @@ export class TripController {
   }
 
   _onFilterChange() {
+    this._updateContainer();
+  }
+
+  createEvent(onNewEventHandledCb) {
+    if (this._newEvent) {
+      return;
+    }
+    this._onNewEventHandled = onNewEventHandledCb;
+    this._newEvent = new EventController(
+        this._container,
+        this._eventTypes,
+        this._destinations,
+        this._onDataChange,
+        this._onViewChange
+    );
     this._updateContainer();
   }
 }

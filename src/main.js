@@ -10,7 +10,7 @@ import {generateEvents} from "./mocks/event";
 import {generateMenu} from "./mocks/menu";
 import {render, RenderPosition} from "./utils/render";
 
-const EVENTS_COUNT = 20;
+const EVENTS_COUNT = 1;
 
 const eventTypes = generateEventTypes();
 const destinations = generateDestinations();
@@ -21,10 +21,10 @@ eventsModel.events = events;
 // Загловок.
 const tripMainElement = document.querySelector(`.trip-main`);
 // Блок информации о маршруте: наименование, сроки и стоимость.
-const tripInfoComponent = new TripInfo(events);
+const tripInfoComponent = new TripInfo(events); // Передавать модель и обновлять
 const tripInfoElement = tripInfoComponent.getElement();
 render(tripMainElement, tripInfoComponent, RenderPosition.AFTERBEGIN);
-render(tripInfoElement, new TripCost(events));
+render(tripInfoElement, new TripCost(events)); // Передавать модель и обновлять
 // Блок элементов управления: навигация и фильтры.
 const tripControlsElement = tripMainElement.querySelector(`.trip-main__trip-controls`);
 render(tripControlsElement.querySelector(`h2`), new Menu(generateMenu()), RenderPosition.AFTEREND);
@@ -34,6 +34,17 @@ filterController.render();
 const tripEventsElement = document.querySelector(`.trip-events`);
 const tripController = new TripController(tripEventsElement, eventsModel);
 tripController.render(eventTypes, destinations);
+
+// Кнопка добавления события.
+const addEventButton = tripMainElement.querySelector(`.trip-main__event-add-btn`);
+addEventButton.addEventListener(`click`, (evt) => {
+  evt.preventDefault();
+  addEventButton.disabled = true;
+  tripController.createEvent(() => {
+    addEventButton.disabled = false;
+  });
+});
+
 
 // Основные операции с данными.
 // 1. Сортировка по дате и времени начала.

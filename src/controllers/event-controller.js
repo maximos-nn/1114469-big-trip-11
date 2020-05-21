@@ -1,8 +1,9 @@
-import {EditForm} from "../components/edit-form";
+import {EditForm, EmptyEvent} from "../components/edit-form";
 import {Event} from "../components/event";
 import {render, replace, remove} from "../utils/render";
 
 const Mode = {
+  ADDING: `adding`,
   DEFAULT: `default`,
   EDIT: `edit`
 };
@@ -24,6 +25,10 @@ export class EventController {
     const oldEventComponent = this._eventComponent;
     const oldEventEditComponent = this._eventEditComponent;
 
+    if (event === EmptyEvent) {
+      this._mode = Mode.ADDING;
+    }
+
     this._eventComponent = new Event(event);
     this._eventEditComponent = new EditForm(this._eventTypes, event, this._destinations);
 
@@ -34,7 +39,8 @@ export class EventController {
 
     this._eventEditComponent.setSubmitHandler((evt) => {
       evt.preventDefault();
-      this._replaceEditToEvent();
+      const data = this._eventEditComponent.getData();
+      this._onDataChange(this, event, data);
     });
 
     this._eventEditComponent.setResetHandler((evt) => {
@@ -46,13 +52,27 @@ export class EventController {
       this._onDataChange(this, event, Object.assign({}, event, {isFavorite: !event.isFavorite}));
     });
 
-    if (oldEventComponent && oldEventEditComponent) {
-      replace(this._eventComponent, oldEventComponent);
-      replace(this._eventEditComponent, oldEventEditComponent);
-      remove(oldEventComponent);
-      remove(oldEventEditComponent);
-    } else {
-      render(this._container, this._eventComponent);
+    switch (this._mode) {
+      case Mode.ADDING:
+        if (oldEventComponent && oldEventEditComponent) {
+          remove(oldEventComponent);
+          remove(oldEventEditComponent);
+        }
+        document.addEventListener(`keydown`, this._onEscKeyDown);
+        render(this._container, this._eventEditComponent);
+        break;
+
+      default:
+        if (oldEventComponent && oldEventEditComponent) {
+          replace(this._eventComponent, oldEventComponent);
+          replace(this._eventEditComponent, oldEventEditComponent);
+          remove(oldEventComponent);
+          remove(oldEventEditComponent);
+          this._replaceEditToEvent();
+        } else {
+          render(this._container, this._eventComponent);
+        }
+        break;
     }
   }
 
@@ -72,6 +92,10 @@ export class EventController {
   _onEscKeyDown(evt) {
     const isEscKey = evt.key === `Escape` || evt.key === `Esc`;
     if (isEscKey) {
+      if (this._mode === Mode.ADDING) {
+        this._onDataChange(this, EmptyEvent, null);
+        return;
+      }
       this._replaceEditToEvent();
     }
   }

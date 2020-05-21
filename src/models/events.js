@@ -9,6 +9,7 @@ export class Events {
   }
 
   get events() {
+    // Сохранять результат применения фильтра, а не фильтровать при возврате событий.
     switch (this._activeFilterType) {
       case FilterType.FUTURE:
         return this._events.filter((event) => event.startDate > new Date());
@@ -58,6 +59,11 @@ export class Events {
     this._events = [].concat(this._events.slice(0, index), this._events.slice(index + 1));
     this._callHandlers(this._dataChangeHandlers);
     return true;
+  }
+
+  addEvent(newEvent) {
+    this._events = [].concat(newEvent, this._events);
+    this._callHandlers(this._dataChangeHandlers);
   }
 
   _callHandlers(handlers) {

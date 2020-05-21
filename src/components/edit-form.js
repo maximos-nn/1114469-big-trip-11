@@ -1,8 +1,22 @@
 import {AbstractSmartComponent} from "./abstract-smart-component";
 import {capitalizeFirstLetter, formatDate, formatTime} from "../utils/format";
-import {generateDefaultEvent} from "../mocks/event";
 import flatpickr from "flatpickr";
 import "flatpickr/dist/flatpickr.min.css";
+
+export const EmptyEvent = {
+  type: `flight`,
+  preposition: `to`,
+  destination: ``,
+  startDate: new Date(),
+  endDate: new Date(),
+  price: ``,
+  offers: [],
+  destinationInfo: {
+    description: ``,
+    photos: [],
+  },
+  isFavorite: false
+};
 
 const createEventTypeMarkup = (type, currentType) => {
   const checkedAttrib = type === currentType ? `checked` : ``;
@@ -38,6 +52,9 @@ const createPhotosMarkup = (photos) => {
 };
 
 const createDestinationMarkup = (destinationInfo) => {
+  if (!destinationInfo) {
+    return ``;
+  }
   const {description, photos} = destinationInfo;
   if (!description && !photos) {
     return ``;
@@ -70,7 +87,7 @@ const createOfferMarkup = (offer) => {
 };
 
 const createOffersMarkup = (offers) => {
-  if (!offers.length) {
+  if (!offers || !offers.length) {
     return ``;
   }
   const offersMarkup = offers.map((offer) => createOfferMarkup(offer)).join(`\n`);
@@ -118,15 +135,14 @@ const createEditModeControls = (isFavorite) => {
 };
 
 const createEditFormTemplate = (eventTypes, event, typeOptions, currentDestination, destinationOptions) => {
-  const isEditMode = !!event;
-  if (!isEditMode) {
-    event = generateDefaultEvent();
-  }
+  event = event || EmptyEvent;
+  const isEditMode = event !== EmptyEvent;
   const {startDate, endDate, price, isFavorite} = event;
   const {type, preposition, offers} = typeOptions;
   const {destination, destinationInfo} = currentDestination;
 
-  const destinationLabelText = `${capitalizeFirstLetter(type)} ${preposition}`;
+  const destinationLabelText = type ? `${capitalizeFirstLetter(type)} ${preposition}` : ``;
+  const eventTypeIcon = type ? `<img class="event__type-icon" width="17" height="17" src="img/icons/${type}.png" alt="Event type icon">` : ``;
   const positionClass = isEditMode ? `` : `trip-events__item`;
   const resetButtonCaption = isEditMode ? `Delete` : `Cancel`;
   const editModeControls = isEditMode ? createEditModeControls(isFavorite) : ``;
@@ -140,7 +156,7 @@ const createEditFormTemplate = (eventTypes, event, typeOptions, currentDestinati
       <div class="event__type-wrapper">
         <label class="event__type  event__type-btn" for="event-type-toggle-1">
           <span class="visually-hidden">Choose event type</span>
-          <img class="event__type-icon" width="17" height="17" src="img/icons/${type}.png" alt="Event type icon">
+          ${eventTypeIcon}
         </label>
         <input class="event__type-toggle  visually-hidden" id="event-type-toggle-1" type="checkbox">
 
@@ -193,10 +209,11 @@ export class EditForm extends AbstractSmartComponent {
   constructor(eventTypes, event, destinations) {
     super();
     this._eventTypes = eventTypes;
-    this._event = event;
-    this._isEditMode = !!event;
-    this._type = event.type;
-    this._destination = event.destination;
+    this._event = event || EmptyEvent;
+    this._isEditMode = this._event !== EmptyEvent;
+    this._type = this._event.type;
+    this._destination = this._event.destination;
+    this._offers = this._event.offers;
     this._destinationInfoMap = new Map(destinations.map((it) => [it.destination, it.destinationInfo]));
     this._submitHandler = null;
     this._resetHandler = null;
@@ -210,7 +227,7 @@ export class EditForm extends AbstractSmartComponent {
     return createEditFormTemplate(
         this._eventTypes,
         this._event,
-        this._getEventTypeData(),
+        Object.assign({}, this._getEventTypeData(this._eventTypes, this._type), {offers: this._offers}),
         {
           destination: this._destination,
           destinationInfo: this._destinationInfoMap.get(this._destination)
@@ -233,6 +250,7 @@ export class EditForm extends AbstractSmartComponent {
 
   reset() {
     this._type = this._event.type;
+    this._offers = this._event.offers;
     this._destination = this._event.destination;
     this.rerender();
   }
@@ -269,9 +287,9 @@ export class EditForm extends AbstractSmartComponent {
       altFormat: `d/m/Y H:i`
     };
     const startDateElement = this.getElement().querySelector(`#event-start-time-1`);
-    this._startFlatpickr = flatpickr(startDateElement, Object.assign({}, options, {defaultDate: this._event.startDate || `today`}));
+    this._startFlatpickr = flatpickr(startDateElement, Object.assign({}, options, {defaultDate: this._event && this._event.startDate || `today`}));
     const endDateElement = this.getElement().querySelector(`#event-end-time-1`);
-    this._endFlatpickr = flatpickr(endDateElement, Object.assign({}, options, {defaultDate: this._event.endDate || `today`}));
+    this._endFlatpickr = flatpickr(endDateElement, Object.assign({}, options, {defaultDate: this._event && this._event.endDate || `today`}));
   }
 
   _setUIHandlers() {
@@ -280,6 +298,7 @@ export class EditForm extends AbstractSmartComponent {
     Array.from(element.querySelectorAll(`input[name="event-type"]`)).forEach((input) => {
       input.addEventListener(`change`, (evt) => {
         this._type = evt.target.value;
+        this._offers = this._getEventTypeData(this._eventTypes, this._type).offers || [];
         this.rerender();
       });
     });
@@ -312,15 +331,38 @@ export class EditForm extends AbstractSmartComponent {
     }
   }
 
-  _getEventTypeData() {
-    for (const group of this._eventTypes) {
+  _getEventTypeData(eventTypes, currentType) {
+    for (const group of eventTypes) {
       const {types, preposition, offers} = group;
-      const index = types.findIndex((type) => type === this._type);
+      const index = types.findIndex((type) => type === currentType);
       if (index === -1) {
         continue;
       }
-      return {type: this._type, preposition, offers: offers[this._type]};
+      return {type: currentType, preposition, offers: offers[currentType]};
     }
     return {};
+  }
+
+  _parseFormData(formData) {
+    const destination = formData.get(`event-destination`);
+    const type = formData.get(`event-type`);
+    const {preposition, offers} = this._getEventTypeData(this._eventTypes, type);
+    const newOffers = (offers || []).map((offer) => Object.assign({}, offer, {isSelected: !!formData.get(`event-offer-${offer.name}`)}));
+    return {
+      type,
+      preposition: preposition || ``,
+      destination,
+      startDate: new Date(formData.get(`event-start-time`)),
+      endDate: new Date(formData.get(`event-end-time`)),
+      price: formData.get(`event-price`),
+      offers: newOffers,
+      destinationInfo: this._destinationInfoMap.get(destination),
+      isFavorite: formData.has(`event-favorite`) ? !!formData.get(`event-favorite`) : false
+    };
+  }
+
+  getData() {
+    const formData = new FormData(this.getElement());
+    return this._parseFormData(formData);
   }
 }
