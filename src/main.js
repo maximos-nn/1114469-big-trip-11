@@ -40,6 +40,7 @@ const addEventButton = tripMainElement.querySelector(`.trip-main__event-add-btn`
 addEventButton.addEventListener(`click`, (evt) => {
   evt.preventDefault();
   addEventButton.disabled = true;
+  filterController.reset();
   tripController.createEvent(() => {
     addEventButton.disabled = false;
   });

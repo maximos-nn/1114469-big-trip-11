@@ -10,7 +10,7 @@ const createFilterMarkup = (filter) => {
       name="trip-filter"
       value="${filter.name}"
       ${filter.isActive ? `checked` : ``}
-      ${filter.isDisabled ? `disabled` : ``}>
+      ${filter.isEnabled ? `` : `disabled`}>
     <label class="trip-filters__filter-label" for="filter-${filter.name}">${filter.name}</label>
   </div>`
   );

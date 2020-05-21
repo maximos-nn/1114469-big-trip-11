@@ -16,6 +16,8 @@ export class FilterController {
 
     this._model.filter = this._activeFilterType;
     this._onFilterTypeChange = this._onFilterTypeChange.bind(this);
+    this._onDataChange = this._onDataChange.bind(this);
+    this._model.setDataChangeHandler(this._onDataChange);
   }
 
   render() {
@@ -23,7 +25,7 @@ export class FilterController {
       return {
         name: filterType,
         isActive: filterType === this._activeFilterType,
-        isDisabled: false
+        isEnabled: filterType === FilterType.EVERYTHING || (this._model.getAvailableFilters())[filterType]
       };
     });
 
@@ -41,5 +43,15 @@ export class FilterController {
   _onFilterTypeChange(newFilterType) {
     this._activeFilterType = newFilterType;
     this._model.filter = newFilterType;
+  }
+
+  _onDataChange() {
+    this.render();
+  }
+
+  reset() {
+    this._activeFilterType = FilterType.EVERYTHING;
+    this._model.filter = this._activeFilterType;
+    this.render();
   }
 }
