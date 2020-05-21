@@ -10,7 +10,7 @@ import {generateEvents} from "./mocks/event";
 import {generateMenu} from "./mocks/menu";
 import {render, RenderPosition} from "./utils/render";
 
-const EVENTS_COUNT = 1;
+const EVENTS_COUNT = 20;
 
 const eventTypes = generateEventTypes();
 const destinations = generateDestinations();

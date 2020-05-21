@@ -3,29 +3,32 @@ import {FilterType} from "../controllers/filter-controller";
 export class Events {
   constructor() {
     this._events = [];
-    this._activeFilterType = null;
+    this._filteredEvents = [];
     this._filterChangeHandlers = [];
     this._dataChangeHandlers = [];
   }
 
   get events() {
-    // Сохранять результат применения фильтра, а не фильтровать при возврате событий.
-    switch (this._activeFilterType) {
-      case FilterType.FUTURE:
-        return this._events.filter((event) => event.startDate > new Date());
-      case FilterType.PAST:
-        return this._events.filter((event) => event.startDate < new Date());
-      default:
-        return this._events;
-    }
+    return this._filteredEvents;
   }
 
   set events(events) {
     this._events = events;
+    this._filteredEvents = events;
   }
 
   set filter(filterType) {
-    this._activeFilterType = filterType;
+    switch (filterType) {
+      case FilterType.FUTURE:
+        this._filteredEvents = this._events.filter((event) => event.startDate > new Date());
+        break;
+      case FilterType.PAST:
+        this._filteredEvents = this._events.filter((event) => event.startDate < new Date());
+        break;
+      default:
+        this._filteredEvents = this._events;
+        break;
+    }
     this._callHandlers(this._filterChangeHandlers);
   }
 
