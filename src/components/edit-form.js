@@ -365,7 +365,7 @@ export class EditForm extends AbstractSmartComponent {
       destination,
       startDate: new Date(formData.get(`event-start-time`)),
       endDate: new Date(formData.get(`event-end-time`)),
-      price: formData.get(`event-price`),
+      price: parseInt(formData.get(`event-price`), 10),
       offers: newOffers,
       destinationInfo: this._destinationInfoMap.get(destination),
       isFavorite: formData.has(`event-favorite`) ? !!formData.get(`event-favorite`) : false
