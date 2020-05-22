@@ -100,12 +100,12 @@ export class TripController {
   }
 
   _renderContainer() {
-    if (!(this._eventsModel.events.length || this._newEvent)) {
+    if (!(this._eventsModel.length || this._newEvent)) {
       render(this._container, this._noEventsComponent);
       return;
     }
 
-    if (!this._eventsModel.events.length) {
+    if (!this._eventsModel.length) {
       remove(this._noEventsComponent);
       this._newEvent.render(EmptyEvent);
       return;

@@ -3,7 +3,7 @@ import {FilterType} from "../controllers/filter-controller";
 export class Events {
   constructor() {
     this._events = [];
-    this._filteredEvents = [];
+    this._currentFilterType = null;
     this._filterChangeHandlers = [];
     this._dataChangeHandlers = [];
     this._availableFilters = {};
@@ -11,13 +11,16 @@ export class Events {
   }
 
   get events() {
-    return this._filteredEvents;
+    return this._filterEvents(this._currentFilterType);
   }
 
   set events(events) {
     this._events = events;
-    this._filteredEvents = events;
     this._updateAvailableFilters();
+  }
+
+  get length() {
+    return this._events.length;
   }
 
   _updateAvailableFilters() {
@@ -52,7 +55,7 @@ export class Events {
   }
 
   set filter(filterType) {
-    this._filteredEvents = this._filterEvents(filterType);
+    this._currentFilterType = filterType;
     this._callHandlers(this._filterChangeHandlers);
   }
 
