@@ -1,9 +1,8 @@
 import {Events} from "./models/events";
 import {FilterController} from "./controllers/filter-controller";
+import {InfoController} from "./controllers/info-controller";
 import {Menu} from "./components/menu";
-import {TripCost} from "./components/trip-cost";
 import {TripController} from "./controllers/trip-controller";
-import {TripInfo} from "./components/trip-info";
 import {generateEventTypes} from "./mocks/event-type";
 import {generateDestinations} from "./mocks/destination";
 import {generateEvents} from "./mocks/event";
@@ -21,10 +20,8 @@ eventsModel.events = events;
 // Загловок.
 const tripMainElement = document.querySelector(`.trip-main`);
 // Блок информации о маршруте: наименование, сроки и стоимость.
-const tripInfoComponent = new TripInfo(events); // Передавать модель и обновлять
-const tripInfoElement = tripInfoComponent.getElement();
-render(tripMainElement, tripInfoComponent, RenderPosition.AFTERBEGIN);
-render(tripInfoElement, new TripCost(events)); // Передавать модель и обновлять
+const tripInfoController = new InfoController(tripMainElement, eventsModel);
+tripInfoController.render();
 // Блок элементов управления: навигация и фильтры.
 const tripControlsElement = tripMainElement.querySelector(`.trip-main__trip-controls`);
 render(tripControlsElement.querySelector(`h2`), new Menu(generateMenu()), RenderPosition.AFTEREND);

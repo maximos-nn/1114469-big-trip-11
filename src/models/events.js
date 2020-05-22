@@ -23,6 +23,10 @@ export class Events {
     return this._events.length;
   }
 
+  get allEvents() {
+    return this._events;
+  }
+
   _updateAvailableFilters() {
     const totalCount = this._events.length;
     if (!totalCount) {
