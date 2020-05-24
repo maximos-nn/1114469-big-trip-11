@@ -134,13 +134,19 @@ const createEditModeControls = (isFavorite) => {
   );
 };
 
-const createEditFormTemplate = (eventTypes, event, typeOptions, currentDestination, destinationOptions) => {
+const isInt = (strValue) => {
+  return /^[0-9]+/.test(strValue);
+};
+
+const createEditFormTemplate = (eventTypes, event, price, typeOptions, currentDestination, destinations) => {
   event = event || EmptyEvent;
   const isEditMode = event !== EmptyEvent;
-  const {startDate, endDate, price, isFavorite} = event;
+  const destinationOptions = Array.from(destinations.keys());
+  const {startDate, endDate, isFavorite} = event;
   const {type, preposition, offers} = typeOptions;
   const {destination, destinationInfo} = currentDestination;
 
+  const isSaveButtonDisabled = !destinations.has(destination) || !isInt(price);
   const destinationLabelText = type ? `${capitalizeFirstLetter(type)} ${preposition}` : ``;
   const eventTypeIcon = type ? `<img class="event__type-icon" width="17" height="17" src="img/icons/${type}.png" alt="Event type icon">` : ``;
   const positionClass = isEditMode ? `` : `trip-events__item`;
@@ -192,10 +198,10 @@ const createEditFormTemplate = (eventTypes, event, typeOptions, currentDestinati
           <span class="visually-hidden">Price</span>
           &euro;
         </label>
-        <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${price}">
+        <input class="event__input  event__input--price" id="event-price-1" type="number" step="1" pattern="\d+" name="event-price" value="${price}">
       </div>
 
-      <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
+      <button class="event__save-btn  btn  btn--blue" type="submit" ${isSaveButtonDisabled ? `disabled` : ``}>Save</button>
       <button class="event__reset-btn" type="reset">${resetButtonCaption}</button>
 
       ${editModeControls}
@@ -214,6 +220,7 @@ export class EditForm extends AbstractSmartComponent {
     this._type = this._event.type;
     this._destination = this._event.destination;
     this._offers = this._event.offers;
+    this._price = this._event.price;
     this._destinationInfoMap = new Map(destinations.map((it) => [it.destination, it.destinationInfo]));
     this._submitHandler = null;
     this._resetHandler = null;
@@ -228,12 +235,13 @@ export class EditForm extends AbstractSmartComponent {
     return createEditFormTemplate(
         this._eventTypes,
         this._event,
+        this._price,
         Object.assign({}, this._getEventTypeData(this._eventTypes, this._type), {offers: this._offers}),
         {
           destination: this._destination,
           destinationInfo: this._destinationInfoMap.get(this._destination)
         },
-        Array.from(this._destinationInfoMap.keys())
+        this._destinationInfoMap
     );
   }
 
@@ -257,6 +265,7 @@ export class EditForm extends AbstractSmartComponent {
     this._type = this._event.type;
     this._offers = this._event.offers;
     this._destination = this._event.destination;
+    this._price = this._event.price;
     this.rerender();
   }
 
@@ -309,8 +318,17 @@ export class EditForm extends AbstractSmartComponent {
     });
 
     element.querySelector(`#event-destination-1`).addEventListener(`change`, (evt) => {
+      this.getElement().querySelector(`.event__save-btn`).disabled = true;
       if (this._destinationInfoMap.has(evt.target.value)) {
         this._destination = evt.target.value;
+        this.rerender();
+      }
+    });
+
+    element.querySelector(`#event-price-1`).addEventListener(`change`, (evt) => {
+      this.getElement().querySelector(`.event__save-btn`).disabled = true;
+      if (isInt(evt.target.value)) {
+        this._price = evt.target.value;
         this.rerender();
       }
     });
