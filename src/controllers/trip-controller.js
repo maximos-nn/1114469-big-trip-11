@@ -1,6 +1,7 @@
 import {Day} from "../components/day";
 import {DayList} from "../components/days-list";
 import {EventController} from "./event-controller";
+import {Mode as EventControllerMode} from "./event-controller";
 import {EmptyEvent} from "../components/edit-form";
 import {NoEvents} from "../components/no-events";
 import {Sort, SortType} from "../components/sort";
@@ -41,7 +42,7 @@ const renderEvents = (events, eventTypes, destinations, container, onDataChange,
           onDataChange,
           onViewChange
       );
-      eventController.render(event);
+      eventController.render(event, EventControllerMode.DEFAULT);
       controllers.push(eventController);
     }
   }
@@ -55,7 +56,7 @@ const sortEvents = (events, sortType) => {
     case SortType.PRICE:
       return [[null, events.slice().sort((a, b) => b.price - a.price)]];
     default:
-      return groupByDays(events);
+      return groupByDays(events.slice().sort((a, b) => a.startDate - b.startDate));
   }
 };
 
@@ -122,7 +123,7 @@ export class TripController {
 
     if (!this._eventsModel.length) {
       remove(this._noEventsComponent);
-      this._newEvent.render(EmptyEvent);
+      this._newEvent.render(EmptyEvent, EventControllerMode.ADDING);
       return;
     }
 
@@ -134,7 +135,7 @@ export class TripController {
 
     // Форма создания/редактирования точки в режиме создания. Выводим в самом начале.
     if (this._newEvent) {
-      this._newEvent.render(EmptyEvent);
+      this._newEvent.render(EmptyEvent, EventControllerMode.ADDING);
     }
 
     this._renderDays(this._sortComponent.getSortType());
@@ -176,7 +177,7 @@ export class TripController {
       }
     } else {
       this._eventsModel.updateEvent(oldData.id, newData);
-      eventController.render(newData);
+      this._updateEvents(this._sortComponent.getSortType());
     }
   }
 

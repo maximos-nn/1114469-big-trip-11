@@ -2,7 +2,7 @@ import {EditForm, EmptyEvent} from "../components/edit-form";
 import {Event} from "../components/event";
 import {render, replace, remove} from "../utils/render";
 
-const Mode = {
+export const Mode = {
   ADDING: `adding`,
   DEFAULT: `default`,
   EDIT: `edit`
@@ -21,13 +21,11 @@ export class EventController {
     this._onEscKeyDown = this._onEscKeyDown.bind(this);
   }
 
-  render(event) {
+  render(event, mode) {
     const oldEventComponent = this._eventComponent;
     const oldEventEditComponent = this._eventEditComponent;
 
-    if (event === EmptyEvent) {
-      this._mode = Mode.ADDING;
-    }
+    this._mode = mode;
 
     this._eventComponent = new Event(event);
     this._eventEditComponent = new EditForm(this._eventTypes, event, this._destinations);
@@ -67,7 +65,6 @@ export class EventController {
         break;
 
       case Mode.DEFAULT:
-      case Mode.EDIT:
         if (oldEventComponent && oldEventEditComponent) {
           replace(this._eventComponent, oldEventComponent);
           replace(this._eventEditComponent, oldEventEditComponent);
