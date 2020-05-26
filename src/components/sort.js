@@ -54,6 +54,16 @@ export class Sort extends AbstractComponent {
     return createSortTemplate();
   }
 
+  getSortType() {
+    return this._currentSortType;
+  }
+
+  setSortTypeChangeHandler(handler) {
+    if (typeof handler === `function`) {
+      this._handler = handler;
+    }
+  }
+
   _setUIHandlers() {
     this._element.addEventListener(`change`, this._onChange); // debounce?
   }
@@ -67,16 +77,6 @@ export class Sort extends AbstractComponent {
     this._currentSortType = newSortType;
     if (this._handler) {
       this._handler(newSortType);
-    }
-  }
-
-  getSortType() {
-    return this._currentSortType;
-  }
-
-  setSortTypeChangeHandler(handler) {
-    if (typeof handler === `function`) {
-      this._handler = handler;
     }
   }
 }

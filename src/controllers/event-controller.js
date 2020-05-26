@@ -66,7 +66,8 @@ export class EventController {
         render(this._container, this._eventEditComponent);
         break;
 
-      default:
+      case Mode.DEFAULT:
+      case Mode.EDIT:
         if (oldEventComponent && oldEventEditComponent) {
           replace(this._eventComponent, oldEventComponent);
           replace(this._eventEditComponent, oldEventEditComponent);
@@ -78,6 +79,18 @@ export class EventController {
         }
         break;
     }
+  }
+
+  setDefaultView() {
+    if (this._mode !== Mode.DEFAULT) {
+      this._replaceEditToEvent();
+    }
+  }
+
+  clean() {
+    remove(this._eventComponent);
+    remove(this._eventEditComponent);
+    document.removeEventListener(`keydown`, this._onEscKeyDown);
   }
 
   _replaceEventToEdit() {
@@ -102,17 +115,5 @@ export class EventController {
       }
       this._replaceEditToEvent();
     }
-  }
-
-  setDefaultView() {
-    if (this._mode !== Mode.DEFAULT) {
-      this._replaceEditToEvent();
-    }
-  }
-
-  cleanUp() {
-    remove(this._eventComponent);
-    remove(this._eventEditComponent);
-    document.removeEventListener(`keydown`, this._onEscKeyDown);
   }
 }

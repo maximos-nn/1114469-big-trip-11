@@ -211,6 +211,36 @@ const createEditFormTemplate = (eventTypes, event, price, typeOptions, currentDe
   );
 };
 
+const getEventTypeData = (eventTypes, currentType) => {
+  for (const group of eventTypes) {
+    const {types, preposition, offers} = group;
+    const index = types.findIndex((type) => type === currentType);
+    if (index === -1) {
+      continue;
+    }
+    return {type: currentType, preposition, offers: offers[currentType]};
+  }
+  return {};
+};
+
+const parseFormData = (formData, eventTypes, destinationInfoMap) => {
+  const destination = formData.get(`event-destination`);
+  const type = formData.get(`event-type`);
+  const {preposition, offers} = getEventTypeData(eventTypes, type);
+  const newOffers = (offers || []).map((offer) => Object.assign({}, offer, {isSelected: !!formData.get(`event-offer-${offer.name}`)}));
+  return {
+    type,
+    preposition: preposition || ``,
+    destination,
+    startDate: new Date(formData.get(`event-start-time`)),
+    endDate: new Date(formData.get(`event-end-time`)),
+    price: parseInt(formData.get(`event-price`), 10),
+    offers: newOffers,
+    destinationInfo: destinationInfoMap.get(destination),
+    isFavorite: formData.has(`event-favorite`) ? !!formData.get(`event-favorite`) : false
+  };
+};
+
 export class EditForm extends AbstractSmartComponent {
   constructor(eventTypes, event, destinations) {
     super();
@@ -236,7 +266,7 @@ export class EditForm extends AbstractSmartComponent {
         this._eventTypes,
         this._event,
         this._price,
-        Object.assign({}, this._getEventTypeData(this._eventTypes, this._type), {offers: this._offers}),
+        Object.assign({}, getEventTypeData(this._eventTypes, this._type), {offers: this._offers}),
         {
           destination: this._destination,
           destinationInfo: this._destinationInfoMap.get(this._destination)
@@ -285,6 +315,11 @@ export class EditForm extends AbstractSmartComponent {
     this._applyFlatpickr();
   }
 
+  getData() {
+    const formData = new FormData(this.getElement());
+    return parseFormData(formData, this._eventTypes, this._destinationInfoMap);
+  }
+
   _applyFlatpickr() {
     if (this._startFlatpickr && this._endFlatpickr) {
       this._startFlatpickr.destroy();
@@ -312,7 +347,7 @@ export class EditForm extends AbstractSmartComponent {
     Array.from(element.querySelectorAll(`input[name="event-type"]`)).forEach((input) => {
       input.addEventListener(`change`, (evt) => {
         this._type = evt.target.value;
-        this._offers = this._getEventTypeData(this._eventTypes, this._type).offers || [];
+        this._offers = getEventTypeData(this._eventTypes, this._type).offers || [];
         this.rerender();
       });
     });
@@ -358,40 +393,5 @@ export class EditForm extends AbstractSmartComponent {
         }
       });
     }
-  }
-
-  _getEventTypeData(eventTypes, currentType) {
-    for (const group of eventTypes) {
-      const {types, preposition, offers} = group;
-      const index = types.findIndex((type) => type === currentType);
-      if (index === -1) {
-        continue;
-      }
-      return {type: currentType, preposition, offers: offers[currentType]};
-    }
-    return {};
-  }
-
-  _parseFormData(formData) {
-    const destination = formData.get(`event-destination`);
-    const type = formData.get(`event-type`);
-    const {preposition, offers} = this._getEventTypeData(this._eventTypes, type);
-    const newOffers = (offers || []).map((offer) => Object.assign({}, offer, {isSelected: !!formData.get(`event-offer-${offer.name}`)}));
-    return {
-      type,
-      preposition: preposition || ``,
-      destination,
-      startDate: new Date(formData.get(`event-start-time`)),
-      endDate: new Date(formData.get(`event-end-time`)),
-      price: parseInt(formData.get(`event-price`), 10),
-      offers: newOffers,
-      destinationInfo: this._destinationInfoMap.get(destination),
-      isFavorite: formData.has(`event-favorite`) ? !!formData.get(`event-favorite`) : false
-    };
-  }
-
-  getData() {
-    const formData = new FormData(this.getElement());
-    return this._parseFormData(formData);
   }
 }

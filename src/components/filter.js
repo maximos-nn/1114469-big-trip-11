@@ -44,6 +44,12 @@ export class Filter extends AbstractComponent {
     return createFiltersTemplate(this._filters);
   }
 
+  setFilterTypeChangeHandler(handler) {
+    if (typeof handler === `function`) {
+      this._handler = handler;
+    }
+  }
+
   _setUIHandlers() {
     this._element.addEventListener(`change`, this._onChange); // debounce?
   }
@@ -56,12 +62,6 @@ export class Filter extends AbstractComponent {
     this._currentFilterType = newFilterType;
     if (this._handler) {
       this._handler(newFilterType);
-    }
-  }
-
-  setFilterTypeChangeHandler(handler) {
-    if (typeof handler === `function`) {
-      this._handler = handler;
     }
   }
 }

@@ -77,6 +77,28 @@ export class TripController {
     this._eventsModel.setFilterChangeHandler(this._onFilterChange);
   }
 
+  render(eventTypes, destinations) {
+    this._eventTypes = eventTypes;
+    this._destinations = destinations;
+
+    this._renderContainer();
+  }
+
+  createEvent(onNewEventHandledCb) {
+    if (this._newEvent) {
+      return;
+    }
+    this._onNewEventHandled = onNewEventHandledCb;
+    this._newEvent = new EventController(
+        this._container,
+        this._eventTypes,
+        this._destinations,
+        this._onDataChange,
+        this._onViewChange
+    );
+    this._updateContainer();
+  }
+
   _renderDays(sortType) {
     // Список дней и контейнер для точек маршрута. Выводим только при наличии точек.
     // Должен содержать как минимум один элемент. В режиме сортировки используется только один элемент.
@@ -90,13 +112,6 @@ export class TripController {
         this._onDataChange,
         this._onViewChange
     );
-  }
-
-  render(eventTypes, destinations) {
-    this._eventTypes = eventTypes;
-    this._destinations = destinations;
-
-    this._renderContainer();
   }
 
   _renderContainer() {
@@ -133,7 +148,7 @@ export class TripController {
   }
 
   _removeEvents() {
-    this._eventControllers.forEach((controller) => controller.cleanUp());
+    this._eventControllers.forEach((controller) => controller.clean());
     this._eventControllers = [];
     remove(this._dayListComponent);
   }
@@ -149,7 +164,7 @@ export class TripController {
       if (newData !== null) {
         this._eventsModel.addEvent(newData);
       }
-      eventController.cleanUp();
+      eventController.clean();
       this._updateContainer();
       this._onNewEventHandled();
     } else if (newData === null) {
@@ -170,21 +185,6 @@ export class TripController {
   }
 
   _onFilterChange() {
-    this._updateContainer();
-  }
-
-  createEvent(onNewEventHandledCb) {
-    if (this._newEvent) {
-      return;
-    }
-    this._onNewEventHandled = onNewEventHandledCb;
-    this._newEvent = new EventController(
-        this._container,
-        this._eventTypes,
-        this._destinations,
-        this._onDataChange,
-        this._onViewChange
-    );
     this._updateContainer();
   }
 }

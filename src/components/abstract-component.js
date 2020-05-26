@@ -20,9 +20,9 @@ export class AbstractComponent {
     return this._element;
   }
 
-  _setUIHandlers() {}
-
   removeElement() {
     this._element = null;
   }
+
+  _setUIHandlers() {}
 }
