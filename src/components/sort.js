@@ -1,5 +1,4 @@
 import {AbstractComponent} from "./abstract-component";
-import {createElement} from "../utils/render";
 
 export const SortType = {
   EVENT: `sort-event`,
@@ -46,21 +45,27 @@ export class Sort extends AbstractComponent {
   constructor() {
     super();
     this._currentSortType = SortType.EVENT;
+    this._handler = null;
+
+    this._onChange = this._onChange.bind(this);
   }
 
   getTemplate() {
     return createSortTemplate();
   }
 
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate());
-      this._handler = null;
-      this._element.addEventListener(`change`, () => {
-        this._onChange();
-      }); // debounce?
+  getSortType() {
+    return this._currentSortType;
+  }
+
+  setSortTypeChangeHandler(handler) {
+    if (typeof handler === `function`) {
+      this._handler = handler;
     }
-    return this._element;
+  }
+
+  _setUIHandlers() {
+    this._element.addEventListener(`change`, this._onChange); // debounce?
   }
 
   _onChange() {
@@ -72,16 +77,6 @@ export class Sort extends AbstractComponent {
     this._currentSortType = newSortType;
     if (this._handler) {
       this._handler(newSortType);
-    }
-  }
-
-  getSortType() {
-    return this._currentSortType;
-  }
-
-  setSortTypeChangeHandler(handler) {
-    if (typeof handler === `function`) {
-      this._handler = handler;
     }
   }
 }

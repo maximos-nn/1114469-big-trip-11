@@ -15,6 +15,7 @@ export class AbstractComponent {
   getElement() {
     if (!this._element) {
       this._element = createElement(this.getTemplate());
+      this._setUIHandlers();
     }
     return this._element;
   }
@@ -22,4 +23,6 @@ export class AbstractComponent {
   removeElement() {
     this._element = null;
   }
+
+  _setUIHandlers() {}
 }

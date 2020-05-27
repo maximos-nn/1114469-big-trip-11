@@ -1,6 +1,8 @@
 import {Day} from "../components/day";
 import {DayList} from "../components/days-list";
 import {EventController} from "./event-controller";
+import {Mode as EventControllerMode} from "./event-controller";
+import {EmptyEvent} from "../components/edit-form";
 import {NoEvents} from "../components/no-events";
 import {Sort, SortType} from "../components/sort";
 import {render, remove} from "../utils/render";
@@ -40,7 +42,7 @@ const renderEvents = (events, eventTypes, destinations, container, onDataChange,
           onDataChange,
           onViewChange
       );
-      eventController.render(event);
+      eventController.render(event, EventControllerMode.DEFAULT);
       controllers.push(eventController);
     }
   }
@@ -54,28 +56,55 @@ const sortEvents = (events, sortType) => {
     case SortType.PRICE:
       return [[null, events.slice().sort((a, b) => b.price - a.price)]];
     default:
-      return groupByDays(events);
+      return groupByDays(events.slice().sort((a, b) => a.startDate - b.startDate));
   }
 };
 
 export class TripController {
-  constructor(container) {
+  constructor(container, eventsModel) {
     this._container = container;
-    this._events = [];
+    this._eventsModel = eventsModel;
     this._eventTypes = [];
     this._noEventsComponent = new NoEvents();
     this._sortComponent = new Sort();
     this._dayListComponent = new DayList();
     this._onDataChange = this._onDataChange.bind(this);
     this._onViewChange = this._onViewChange.bind(this);
+    this._onFilterChange = this._onFilterChange.bind(this);
     this._eventControllers = [];
+    this._newEvent = null;
+    this._onNewEventHandled = null;
+
+    this._eventsModel.setFilterChangeHandler(this._onFilterChange);
+  }
+
+  render(eventTypes, destinations) {
+    this._eventTypes = eventTypes;
+    this._destinations = destinations;
+
+    this._renderContainer();
+  }
+
+  createEvent(onNewEventHandledCb) {
+    if (this._newEvent) {
+      return;
+    }
+    this._onNewEventHandled = onNewEventHandledCb;
+    this._newEvent = new EventController(
+        this._container,
+        this._eventTypes,
+        this._destinations,
+        this._onDataChange,
+        this._onViewChange
+    );
+    this._updateContainer();
   }
 
   _renderDays(sortType) {
     // Список дней и контейнер для точек маршрута. Выводим только при наличии точек.
     // Должен содержать как минимум один элемент. В режиме сортировки используется только один элемент.
     render(this._container, this._dayListComponent);
-    const sortedEvents = sortEvents(this._events, sortType);
+    const sortedEvents = sortEvents(this._eventsModel.events, sortType);
     this._eventControllers = renderEvents(
         sortedEvents,
         this._eventTypes,
@@ -86,43 +115,77 @@ export class TripController {
     );
   }
 
-  render(events, eventTypes, destinations) {
-    this._events = events;
-    this._eventTypes = eventTypes;
-    this._destinations = destinations;
+  _renderContainer() {
+    if (!(this._eventsModel.length || this._newEvent)) {
+      render(this._container, this._noEventsComponent);
+      return;
+    }
 
-    // Основной контейнер для точек маршрута.
-    const tripEventsElement = this._container;
-
-    if (!events.length) {
-      render(tripEventsElement, this._noEventsComponent);
+    if (!this._eventsModel.length) {
+      remove(this._noEventsComponent);
+      this._newEvent.render(EmptyEvent, EventControllerMode.ADDING);
       return;
     }
 
     // Форма сортировки, заголовки столбцов. Выводим только при наличии точек маршрута.
-    render(tripEventsElement, this._sortComponent);
+    render(this._container, this._sortComponent);
+    this._sortComponent.setSortTypeChangeHandler((newSortType) => {
+      this._updateEvents(newSortType);
+    });
 
     // Форма создания/редактирования точки в режиме создания. Выводим в самом начале.
-    // render(tripEventsElement, new EditForm(eventTypes));
+    if (this._newEvent) {
+      this._newEvent.render(EmptyEvent, EventControllerMode.ADDING);
+    }
 
     this._renderDays(this._sortComponent.getSortType());
+  }
 
-    this._sortComponent.setSortTypeChangeHandler((newSortType) => {
-      remove(this._dayListComponent);
-      this._renderDays(newSortType);
-    });
+  _updateContainer() {
+    remove(this._sortComponent);
+    this._sortComponent = new Sort();
+    this._removeEvents();
+    this._renderContainer();
+  }
+
+  _removeEvents() {
+    this._eventControllers.forEach((controller) => controller.clean());
+    this._eventControllers = [];
+    remove(this._dayListComponent);
+  }
+
+  _updateEvents(sortType) {
+    this._removeEvents();
+    this._renderDays(sortType);
   }
 
   _onDataChange(eventController, oldData, newData) {
-    const index = this._events.findIndex((it) => it === oldData);
-    if (index === -1) {
-      return;
+    if (oldData === EmptyEvent) {
+      this._newEvent = null;
+      if (newData !== null) {
+        this._eventsModel.addEvent(newData);
+      }
+      eventController.clean();
+      this._updateContainer();
+      this._onNewEventHandled();
+    } else if (newData === null) {
+      this._eventsModel.removeEvent(oldData.id);
+      if (this._eventsModel.events.length) {
+        this._updateEvents(this._sortComponent.getSortType());
+      } else {
+        this._updateContainer();
+      }
+    } else {
+      this._eventsModel.updateEvent(oldData.id, newData);
+      this._updateEvents(this._sortComponent.getSortType());
     }
-    this._events = [].concat(this._events.slice(0, index), newData, this._events.slice(index + 1));
-    eventController.render(this._events[index]);
   }
 
   _onViewChange() {
     this._eventControllers.forEach((it) => it.setDefaultView());
+  }
+
+  _onFilterChange() {
+    this._updateContainer();
   }
 }
