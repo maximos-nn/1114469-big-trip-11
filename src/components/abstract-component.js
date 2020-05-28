@@ -24,5 +24,17 @@ export class AbstractComponent {
     this._element = null;
   }
 
+  show(hiddenClass) {
+    if (this._element) {
+      this._element.classList.remove(hiddenClass);
+    }
+  }
+
+  hide(hiddenClass) {
+    if (this._element) {
+      this._element.classList.add(hiddenClass);
+    }
+  }
+
   _setUIHandlers() {}
 }

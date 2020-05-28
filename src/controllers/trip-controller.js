@@ -8,6 +8,8 @@ import {Sort, SortType} from "../components/sort";
 import {render, remove} from "../utils/render";
 import {getDate} from "../utils/common";
 
+const HIDDEN_CLASS = `trip-events--hidden`;
+
 const mapEventToDate = (resultMap, event) => {
   const key = getDate(event.startDate.getTime());
 
@@ -62,7 +64,8 @@ const sortEvents = (events, sortType) => {
 
 export class TripController {
   constructor(container, eventsModel) {
-    this._container = container;
+    this._containerComponent = container;
+    this._container = container.getElement();
     this._eventsModel = eventsModel;
     this._eventTypes = [];
     this._noEventsComponent = new NoEvents();
@@ -98,6 +101,15 @@ export class TripController {
         this._onViewChange
     );
     this._updateContainer();
+  }
+
+  show() {
+    this._containerComponent.show(HIDDEN_CLASS);
+    this._updateContainer();
+  }
+
+  hide() {
+    this._containerComponent.hide(HIDDEN_CLASS);
   }
 
   _renderDays(sortType) {
