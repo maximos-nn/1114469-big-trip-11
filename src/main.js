@@ -1,15 +1,17 @@
 import {Events} from "./models/events";
 import {FilterController} from "./controllers/filter-controller";
 import {InfoController} from "./controllers/info-controller";
-import {Menu} from "./components/menu";
+import {Menu, MenuItem} from "./components/menu";
+import {Statistics} from "./components/statistics";
 import {TripController} from "./controllers/trip-controller";
+import {TripEvents} from "./components/trip-events";
 import {generateEventTypes} from "./mocks/event-type";
 import {generateDestinations} from "./mocks/destination";
 import {generateEvents} from "./mocks/event";
-import {generateMenu} from "./mocks/menu";
 import {render, RenderPosition} from "./utils/render";
 
 const EVENTS_COUNT = 20;
+const HIDDEN_CLASS = `visually-hidden`;
 
 const eventTypes = generateEventTypes();
 const destinations = generateDestinations();
@@ -24,13 +26,20 @@ const tripInfoController = new InfoController(tripMainElement, eventsModel);
 tripInfoController.render();
 // Блок элементов управления: навигация и фильтры.
 const tripControlsElement = tripMainElement.querySelector(`.trip-main__trip-controls`);
-render(tripControlsElement.querySelector(`h2`), new Menu(generateMenu()), RenderPosition.AFTEREND);
+const menuComponent = new Menu();
+menuComponent.setActiveItem(MenuItem.TABLE);
+render(tripControlsElement.querySelector(`h2`), menuComponent, RenderPosition.AFTEREND);
 const filterController = new FilterController(tripControlsElement, eventsModel);
 filterController.render();
 
-const tripEventsElement = document.querySelector(`.trip-events`);
-const tripController = new TripController(tripEventsElement, eventsModel);
+const bodyContainer = document.querySelector(`.page-body__page-main .page-body__container`);
+const tripEventsComponent = new TripEvents();
+render(bodyContainer, tripEventsComponent);
+const tripController = new TripController(tripEventsComponent, eventsModel);
 tripController.render(eventTypes, destinations);
+const statisticsComponent = new Statistics(eventsModel);
+render(bodyContainer, statisticsComponent);
+statisticsComponent.hide(HIDDEN_CLASS);
 
 // Кнопка добавления события.
 const addEventButton = tripMainElement.querySelector(`.trip-main__event-add-btn`);
@@ -41,6 +50,20 @@ addEventButton.addEventListener(`click`, (evt) => {
   tripController.createEvent(() => {
     addEventButton.disabled = false;
   });
+});
+
+menuComponent.setMenuItemChangeHandler((menuItem) => {
+  menuComponent.setActiveItem(menuItem);
+  switch (menuItem) {
+    case MenuItem.TABLE:
+      tripController.show();
+      statisticsComponent.hide(HIDDEN_CLASS);
+      break;
+    case MenuItem.STATISTICS:
+      tripController.hide();
+      statisticsComponent.show(HIDDEN_CLASS);
+      break;
+  }
 });
 
 
