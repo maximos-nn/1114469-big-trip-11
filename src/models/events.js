@@ -14,6 +14,7 @@ export class Events {
 
   set events(events) {
     this._events = events;
+    this._callHandlers(this._dataChangeHandlers);
   }
 
   get length() {

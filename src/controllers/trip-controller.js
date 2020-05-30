@@ -63,10 +63,11 @@ const sortEvents = (events, sortType) => {
 };
 
 export class TripController {
-  constructor(container, eventsModel) {
+  constructor(container, eventsModel, api) {
     this._containerComponent = container;
     this._container = container.getElement();
     this._eventsModel = eventsModel;
+    this._api = api;
     this._eventTypes = [];
     this._noEventsComponent = new NoEvents();
     this._sortComponent = new Sort();
@@ -188,8 +189,11 @@ export class TripController {
         this._updateContainer();
       }
     } else {
-      this._eventsModel.updateEvent(oldData.id, newData);
-      this._updateEvents(this._sortComponent.getSortType());
+      this._api.updateEvent(oldData.id, newData)
+        .then((event) => {
+          this._eventsModel.updateEvent(oldData.id, event);
+          this._updateEvents(this._sortComponent.getSortType());
+        });
     }
   }
 

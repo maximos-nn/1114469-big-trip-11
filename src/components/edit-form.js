@@ -1,5 +1,6 @@
 import {AbstractSmartComponent} from "./abstract-smart-component";
 import {capitalizeFirstLetter, formatDate, formatTime} from "../utils/format";
+import {getEventTypeData} from "../utils/common";
 import flatpickr from "flatpickr";
 import "flatpickr/dist/flatpickr.min.css";
 
@@ -45,7 +46,7 @@ const createPhotosMarkup = (photos) => {
   return (
     `<div class="event__photos-container">
     <div class="event__photos-tape">
-      ${photos.map((photo) => `<img class="event__photo" src="${photo}" alt="Event photo">`).join(`\n`)}
+      ${photos.map((photo) => `<img class="event__photo" src="${photo.src}" alt="${photo.description || `Event photo`}">`).join(`\n`)}
     </div>
   </div>`
   );
@@ -211,23 +212,11 @@ const createEditFormTemplate = (eventTypes, event, price, typeOptions, currentDe
   );
 };
 
-const getEventTypeData = (eventTypes, currentType) => {
-  for (const group of eventTypes) {
-    const {types, preposition, offers} = group;
-    const index = types.findIndex((type) => type === currentType);
-    if (index === -1) {
-      continue;
-    }
-    return {type: currentType, preposition, offers: offers[currentType]};
-  }
-  return {};
-};
-
 const parseFormData = (formData, eventTypes, destinationInfoMap) => {
   const destination = formData.get(`event-destination`);
   const type = formData.get(`event-type`);
   const {preposition, offers} = getEventTypeData(eventTypes, type);
-  const newOffers = (offers || []).map((offer) => Object.assign({}, offer, {isSelected: !!formData.get(`event-offer-${offer.name}`)}));
+  const newOffers = (offers || []).filter((offer) => !!formData.get(`event-offer-${offer.name}`)).map((offer) => Object.assign({}, offer, {isSelected: true}));
   return {
     type,
     preposition: preposition || ``,
