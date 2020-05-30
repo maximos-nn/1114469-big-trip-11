@@ -1,48 +1,45 @@
+import {API} from "./api";
 import {Events} from "./models/events";
 import {FilterController} from "./controllers/filter-controller";
 import {InfoController} from "./controllers/info-controller";
+import {Loading} from "./components/loading";
 import {Menu, MenuItem} from "./components/menu";
 import {Statistics} from "./components/statistics";
 import {TripController} from "./controllers/trip-controller";
 import {TripEvents} from "./components/trip-events";
-import {generateEventTypes} from "./mocks/event-type";
-import {generateDestinations} from "./mocks/destination";
-import {generateEvents} from "./mocks/event";
-import {render, RenderPosition} from "./utils/render";
+import {render, RenderPosition, remove} from "./utils/render";
 
-const EVENTS_COUNT = 20;
 const HIDDEN_CLASS = `visually-hidden`;
+const AUTHORIZATION = `Basic akZySW7RrTUQXstbEgUh`;
+const END_POINT = `https://11.ecmascript.pages.academy/big-trip`;
 
-const eventTypes = generateEventTypes();
-const destinations = generateDestinations();
-const events = generateEvents(EVENTS_COUNT, eventTypes, destinations).sort((a, b) => a.startDate - b.startDate);
 const eventsModel = new Events();
-eventsModel.events = events;
+const api = new API(END_POINT, AUTHORIZATION);
 
-// Загловок.
 const tripMainElement = document.querySelector(`.trip-main`);
-// Блок информации о маршруте: наименование, сроки и стоимость.
 const tripInfoController = new InfoController(tripMainElement, eventsModel);
-tripInfoController.render();
-// Блок элементов управления: навигация и фильтры.
 const tripControlsElement = tripMainElement.querySelector(`.trip-main__trip-controls`);
 const menuComponent = new Menu();
 menuComponent.setActiveItem(MenuItem.TABLE);
-render(tripControlsElement.querySelector(`h2`), menuComponent, RenderPosition.AFTEREND);
 const filterController = new FilterController(tripControlsElement, eventsModel);
-filterController.render();
 
 const bodyContainer = document.querySelector(`.page-body__page-main .page-body__container`);
 const tripEventsComponent = new TripEvents();
-render(bodyContainer, tripEventsComponent);
-const tripController = new TripController(tripEventsComponent, eventsModel);
-tripController.render(eventTypes, destinations);
+const loadingComponent = new Loading();
+const tripController = new TripController(tripEventsComponent, eventsModel, api);
 const statisticsComponent = new Statistics(eventsModel);
+
+tripInfoController.render();
+render(tripControlsElement.querySelector(`h2`), menuComponent, RenderPosition.AFTEREND);
+filterController.render();
+
+render(bodyContainer, tripEventsComponent);
+render(tripEventsComponent.getElement(), loadingComponent);
 render(bodyContainer, statisticsComponent);
 statisticsComponent.hide(HIDDEN_CLASS);
 
-// Кнопка добавления события.
 const addEventButton = tripMainElement.querySelector(`.trip-main__event-add-btn`);
+addEventButton.disabled = true;
 addEventButton.addEventListener(`click`, (evt) => {
   evt.preventDefault();
   addEventButton.disabled = true;
@@ -52,7 +49,7 @@ addEventButton.addEventListener(`click`, (evt) => {
   });
 });
 
-menuComponent.setMenuItemChangeHandler((menuItem) => {
+const menuItemChangeHandler = (menuItem) => {
   menuComponent.setActiveItem(menuItem);
   switch (menuItem) {
     case MenuItem.TABLE:
@@ -64,24 +61,14 @@ menuComponent.setMenuItemChangeHandler((menuItem) => {
       statisticsComponent.show(HIDDEN_CLASS);
       break;
   }
-});
+};
 
-
-// Основные операции с данными.
-// 1. Сортировка по дате и времени начала.
-// 2. Группировка по дате начала.
-// 3. Сортировка по продолжительности.
-// 4. Сортировка по базовой цене точки.
-// 5. Суммирование итоговых цен точек (вместе с опциями).
-// 6. Формирование наименования маршрута (3 пункта назначения или первый и последний пункты).
-// 7. Продолжительность маршрута (самая ранняя дата и самая поздняя дата). Активация кнопок фильтра.
-// 8. Группировка (и сортировка) по типу точек для статистики.
-// 9. Интервалы точек не должны пересекаться. Проверка пересечения диапазонов. Пункт 1.
-// 10. Добавление новой точки. Пункты 5-7, 9.
-// 11. Удаление точки. Пункты 5-7.
-// 12. Изменение точки. Пункты 5-7, 9.
-
-// Статистика.
-// 1. Общая сумма по типу точек.
-// 2. Общее количество по типу точек.
-// 3. Общее время по типу точек.
+api.getData()
+  .then((data) => {
+    const [destinations, eventTypes, events] = data;
+    eventsModel.events = events;
+    remove(loadingComponent);
+    menuComponent.setMenuItemChangeHandler(menuItemChangeHandler);
+    addEventButton.disabled = false;
+    tripController.render(eventTypes, destinations);
+  });

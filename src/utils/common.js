@@ -3,3 +3,15 @@ export const getDate = (unixTime) => {
   date.setHours(0, 0, 0, 0);
   return date.getTime();
 };
+
+export const getEventTypeData = (eventTypes, currentType) => {
+  for (const group of eventTypes) {
+    const {types, preposition, offers} = group;
+    const index = types.findIndex((type) => type === currentType);
+    if (index === -1) {
+      continue;
+    }
+    return {type: currentType, preposition, offers: offers[currentType]};
+  }
+  return {};
+};

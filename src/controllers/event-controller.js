@@ -1,5 +1,6 @@
 import {EditForm, EmptyEvent} from "../components/edit-form";
 import {Event} from "../components/event";
+import {Event as EventModel} from "../models/event";
 import {render, replace, remove} from "../utils/render";
 
 export const Mode = {
@@ -38,7 +39,7 @@ export class EventController {
     this._eventEditComponent.setSubmitHandler((evt) => {
       evt.preventDefault();
       const data = this._eventEditComponent.getData();
-      this._onDataChange(this, event, data);
+      this._onDataChange(this, event, EventModel.create(data));
     });
 
     this._eventEditComponent.setResetHandler((evt) => {
@@ -47,7 +48,9 @@ export class EventController {
     });
 
     this._eventEditComponent.setFavoriteButtonClickHandler(() => {
-      this._onDataChange(this, event, Object.assign({}, event, {isFavorite: !event.isFavorite}));
+      const newEvent = EventModel.clone(event);
+      newEvent.isFavorite = !newEvent.isFavorite;
+      this._onDataChange(this, event, newEvent);
     });
 
     this._eventEditComponent.setCloseButtonClickHandler(() => {
