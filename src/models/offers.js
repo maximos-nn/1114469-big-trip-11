@@ -23,7 +23,7 @@ const setOffers = (group, typeOffers) => {
   return group;
 };
 
-export class Offers {
+export default class Offers {
   static parseOffers(data) {
     const typeOffers = data.reduce((resultMap, offers) => {
       resultMap.set(offers.type, offers.offers);

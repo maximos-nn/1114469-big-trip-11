@@ -1,4 +1,4 @@
-import {AbstractComponent} from "./abstract-component";
+import AbstractComponent from "./abstract-component";
 import {formatISODate, formatMonthDayDate} from "../utils/format";
 
 const createDayTemplate = (counter, date) => {
@@ -18,7 +18,7 @@ const createDayTemplate = (counter, date) => {
   );
 };
 
-export class Day extends AbstractComponent {
+export default class Day extends AbstractComponent {
   constructor(counter, date) {
     super();
     this._counter = counter;

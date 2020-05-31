@@ -1,4 +1,4 @@
-import {Filter} from "../components/filter";
+import Filter from "../components/filter";
 import {render, replace} from "../utils/render";
 import {FilterType, filterEvents} from "../utils/filter";
 
@@ -17,7 +17,7 @@ const getAvailableFilters = (events) => {
   return {[FilterType.FUTURE]: true, [FilterType.PAST]: true};
 };
 
-export class FilterController {
+export default class FilterController {
   constructor(container, model) {
     this._container = container;
     this._model = model;

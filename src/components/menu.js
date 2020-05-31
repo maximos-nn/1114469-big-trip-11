@@ -1,6 +1,6 @@
-import {AbstractComponent} from "./abstract-component";
+import AbstractComponent from "./abstract-component";
 
-export const MenuItem = {
+const MenuItem = {
   TABLE: `Table`,
   STATISTICS: `Stats`
 };
@@ -18,7 +18,7 @@ const createMenuTemplate = (menu) => {
   );
 };
 
-export class Menu extends AbstractComponent {
+export default class Menu extends AbstractComponent {
   constructor() {
     super();
     this._currentItem = MenuItem.TABLE;
@@ -29,6 +29,10 @@ export class Menu extends AbstractComponent {
 
   getTemplate() {
     return createMenuTemplate(Object.values(MenuItem));
+  }
+
+  _setUIHandlers() {
+    this.getElement().addEventListener(`click`, this._onClick);
   }
 
   setActiveItem(menuItem) {
@@ -46,10 +50,6 @@ export class Menu extends AbstractComponent {
     }
   }
 
-  _setUIHandlers() {
-    this.getElement().addEventListener(`click`, this._onClick);
-  }
-
   _onClick(evt) {
     if (evt.target.tagName !== `A`) {
       return;
@@ -65,3 +65,5 @@ export class Menu extends AbstractComponent {
     }
   }
 }
+
+export {MenuItem};

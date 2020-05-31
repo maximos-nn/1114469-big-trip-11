@@ -1,17 +1,17 @@
-import {EditForm, EmptyEvent} from "../components/edit-form";
-import {Event} from "../components/event";
-import {Event as EventModel} from "../models/event";
+import EditForm, {EmptyEvent} from "../components/edit-form";
+import Event from "../components/event";
+import EventModel from "../models/event";
 import {render, replace, remove} from "../utils/render";
 
 const SHAKE_ANIMATION_TIMEOUT = 600;
 
-export const Mode = {
+const Mode = {
   ADDING: `adding`,
   DEFAULT: `default`,
   EDIT: `edit`
 };
 
-export class EventController {
+export default class EventController {
   constructor(container, eventTypes, destinations, onDataChange, onViewChange) {
     this._container = container;
     this._eventTypes = eventTypes;
@@ -41,9 +41,9 @@ export class EventController {
     this._eventEditComponent.setSubmitHandler((evt) => {
       evt.preventDefault();
       this._eventEditComponent.setButtonCaptions({saveButton: `Saving...`});
-      const data = this._eventEditComponent.getData();
+      const formEvent = this._eventEditComponent.getData();
       this._eventEditComponent.disable();
-      this._onDataChange(this, event, EventModel.create(data));
+      this._onDataChange(this, event, EventModel.create(formEvent));
     });
 
     this._eventEditComponent.setResetHandler((evt) => {
@@ -56,6 +56,8 @@ export class EventController {
     this._eventEditComponent.setFavoriteButtonClickHandler(() => {
       const newEvent = EventModel.clone(event);
       newEvent.isFavorite = !newEvent.isFavorite;
+      newEvent.offers = newEvent.offers.filter((offer) => offer.isSelected);
+      this._eventEditComponent.disable();
       this._onDataChange(this, event, newEvent);
     });
 
@@ -145,3 +147,5 @@ export class EventController {
     }
   }
 }
+
+export {Mode};

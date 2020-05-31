@@ -1,6 +1,6 @@
 import {filterEvents} from "../utils/filter";
 
-export class Events {
+export default class Events {
   constructor() {
     this._events = [];
     this._currentFilterType = null;

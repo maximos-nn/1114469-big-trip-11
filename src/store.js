@@ -1,4 +1,4 @@
-export class Store {
+export default class Store {
   static setDestinations(destinations) {
     Store.destinations = destinations;
   }

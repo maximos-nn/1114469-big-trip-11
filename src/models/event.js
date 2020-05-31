@@ -1,6 +1,6 @@
 import {getEventTypeData} from "../utils/common";
 
-export class Event {
+export default class Event {
   constructor(event) {
     this.id = event[`id`];
     this.type = event[`type`];

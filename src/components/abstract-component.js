@@ -1,6 +1,6 @@
 import {createElement} from "../utils/render";
 
-export class AbstractComponent {
+export default class AbstractComponent {
   constructor() {
     if (new.target === AbstractComponent) {
       throw new Error(`Невозможно инстанцировать абстрактный класс AbstractComponent.`);

@@ -1,8 +1,8 @@
-import {TripInfo} from "../components/trip-info";
-import {TripCost} from "../components/trip-cost";
+import TripInfo from "../components/trip-info";
+import TripCost from "../components/trip-cost";
 import {render, RenderPosition, replace, remove} from "../utils/render";
 
-export class InfoController {
+export default class InfoController {
   constructor(container, model) {
     this._container = container;
     this._model = model;

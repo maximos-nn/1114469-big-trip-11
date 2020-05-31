@@ -1,6 +1,6 @@
-import {AbstractComponent} from "./abstract-component";
+import AbstractComponent from "./abstract-component";
 
-export const SortType = {
+const SortType = {
   EVENT: `sort-event`,
   PRICE: `sort-price`,
   TIME: `sort-time`
@@ -41,7 +41,7 @@ const createSortTemplate = () => {
   );
 };
 
-export class Sort extends AbstractComponent {
+export default class Sort extends AbstractComponent {
   constructor() {
     super();
     this._currentSortType = SortType.EVENT;
@@ -54,6 +54,10 @@ export class Sort extends AbstractComponent {
     return createSortTemplate();
   }
 
+  _setUIHandlers() {
+    this._element.addEventListener(`change`, this._onChange);
+  }
+
   getSortType() {
     return this._currentSortType;
   }
@@ -62,10 +66,6 @@ export class Sort extends AbstractComponent {
     if (typeof handler === `function`) {
       this._handler = handler;
     }
-  }
-
-  _setUIHandlers() {
-    this._element.addEventListener(`change`, this._onChange); // debounce?
   }
 
   _onChange() {
@@ -80,3 +80,5 @@ export class Sort extends AbstractComponent {
     }
   }
 }
+
+export {SortType};

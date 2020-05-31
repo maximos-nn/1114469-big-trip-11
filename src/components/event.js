@@ -1,4 +1,4 @@
-import {AbstractComponent} from "./abstract-component";
+import AbstractComponent from "./abstract-component";
 import {formatDuration, formatTime, capitalizeFirstLetter} from "../utils/format";
 
 const OFFERS_COUNT = 3;
@@ -67,7 +67,7 @@ const createEventTemplate = (event) => {
   );
 };
 
-export class Event extends AbstractComponent {
+export default class Event extends AbstractComponent {
   constructor(event) {
     super();
     this._event = event;

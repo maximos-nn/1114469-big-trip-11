@@ -1,10 +1,10 @@
-import {AbstractSmartComponent} from "./abstract-smart-component";
+import AbstractSmartComponent from "./abstract-smart-component";
 import {capitalizeFirstLetter, formatDate, formatTime} from "../utils/format";
 import {getEventTypeData} from "../utils/common";
 import flatpickr from "flatpickr";
 import "flatpickr/dist/flatpickr.min.css";
 
-export const EmptyEvent = {
+const EmptyEvent = {
   type: `flight`,
   preposition: `to`,
   destination: ``,
@@ -228,11 +228,11 @@ const parseFormData = (formData, eventTypes, destinationInfoMap) => {
     price: parseInt(formData.get(`event-price`), 10),
     offers: newOffers,
     destinationInfo: destinationInfoMap.get(destination),
-    isFavorite: formData.has(`event-favorite`) ? !!formData.get(`event-favorite`) : false
+    isFavorite: !!formData.get(`event-favorite`)
   };
 };
 
-export class EditForm extends AbstractSmartComponent {
+export default class EditForm extends AbstractSmartComponent {
   constructor(eventTypes, event, destinations) {
     super();
     this._eventTypes = eventTypes;
@@ -263,25 +263,9 @@ export class EditForm extends AbstractSmartComponent {
     );
   }
 
-  setSubmitHandler(handler) {
-    this._submitHandler = handler;
-  }
-
-  setResetHandler(handler) {
-    this._resetHandler = handler;
-  }
-
-  setFavoriteButtonClickHandler(handler) {
-    this._favoriteButtonClickHandler = handler;
-  }
-
-  setCloseButtonClickHandler(handler) {
-    this._closeButtonClickHandler = handler;
-  }
-
-  reset() {
-    this._event = Object.assign({}, this._originalEvent);
-    this.rerender();
+  rerender() {
+    super.rerender();
+    this._applyFlatpickr();
   }
 
   removeElement() {
@@ -293,60 +277,6 @@ export class EditForm extends AbstractSmartComponent {
     }
 
     super.removeElement();
-  }
-
-  rerender() {
-    super.rerender();
-    this._applyFlatpickr();
-  }
-
-  getData() {
-    const formData = new FormData(this.getElement());
-    return parseFormData(formData, this._eventTypes, this._destinationInfoMap);
-  }
-
-  setButtonCaptions(captions) {
-    this._buttonCaptions = Object.assign({}, DefaultButtonCaption, captions);
-    this.rerender();
-  }
-
-  enable() {
-    this._toggle(false);
-  }
-
-  disable() {
-    this._toggle(true);
-  }
-
-  _toggle(disabled) {
-    const element = this.getElement();
-    element.querySelectorAll(`input`).forEach((input) => {
-      input.disabled = disabled;
-    });
-    element.querySelectorAll(`button`).forEach((button) => {
-      button.disabled = disabled;
-    });
-  }
-
-  _applyFlatpickr() {
-    if (this._startFlatpickr && this._endFlatpickr) {
-      this._startFlatpickr.destroy();
-      this._endFlatpickr.destroy();
-      this._startFlatpickr = null;
-      this._endFlatpickr = null;
-    }
-
-    const options = {
-      altInput: true,
-      allowInput: true,
-      enableTime: true,
-      [`time_24hr`]: true,
-      altFormat: `d/m/Y H:i`
-    };
-    const startDateElement = this.getElement().querySelector(`#event-start-time-1`);
-    this._startFlatpickr = flatpickr(startDateElement, Object.assign({}, options, {defaultDate: this._event && this._event.startDate || `today`}));
-    const endDateElement = this.getElement().querySelector(`#event-end-time-1`);
-    this._endFlatpickr = flatpickr(endDateElement, Object.assign({}, options, {defaultDate: this._event && this._event.endDate || `today`}));
   }
 
   _setUIHandlers() {
@@ -425,4 +355,76 @@ export class EditForm extends AbstractSmartComponent {
       });
     }
   }
+
+  setSubmitHandler(handler) {
+    this._submitHandler = handler;
+  }
+
+  setResetHandler(handler) {
+    this._resetHandler = handler;
+  }
+
+  setFavoriteButtonClickHandler(handler) {
+    this._favoriteButtonClickHandler = handler;
+  }
+
+  setCloseButtonClickHandler(handler) {
+    this._closeButtonClickHandler = handler;
+  }
+
+  reset() {
+    this._event = Object.assign({}, this._originalEvent);
+    this.rerender();
+  }
+
+  getData() {
+    const formData = new FormData(this.getElement());
+    return parseFormData(formData, this._eventTypes, this._destinationInfoMap);
+  }
+
+  setButtonCaptions(captions) {
+    this._buttonCaptions = Object.assign({}, DefaultButtonCaption, captions);
+    this.rerender();
+  }
+
+  enable() {
+    this._toggle(false);
+  }
+
+  disable() {
+    this._toggle(true);
+  }
+
+  _toggle(disabled) {
+    const element = this.getElement();
+    element.querySelectorAll(`input`).forEach((input) => {
+      input.disabled = disabled;
+    });
+    element.querySelectorAll(`button`).forEach((button) => {
+      button.disabled = disabled;
+    });
+  }
+
+  _applyFlatpickr() {
+    if (this._startFlatpickr && this._endFlatpickr) {
+      this._startFlatpickr.destroy();
+      this._endFlatpickr.destroy();
+      this._startFlatpickr = null;
+      this._endFlatpickr = null;
+    }
+
+    const options = {
+      altInput: true,
+      allowInput: true,
+      enableTime: true,
+      [`time_24hr`]: true,
+      altFormat: `d/m/Y H:i`
+    };
+    const startDateElement = this.getElement().querySelector(`#event-start-time-1`);
+    this._startFlatpickr = flatpickr(startDateElement, Object.assign({}, options, {defaultDate: this._event && this._event.startDate || `today`}));
+    const endDateElement = this.getElement().querySelector(`#event-end-time-1`);
+    this._endFlatpickr = flatpickr(endDateElement, Object.assign({}, options, {defaultDate: this._event && this._event.endDate || `today`}));
+  }
 }
+
+export {EmptyEvent};

@@ -1,4 +1,4 @@
-import {AbstractComponent} from "./abstract-component";
+import AbstractComponent from "./abstract-component";
 
 const createFilterMarkup = (filter) => {
   return (
@@ -30,7 +30,7 @@ const getActiveFilterType = (filters) => {
   return activeFilter ? activeFilter.name : ``;
 };
 
-export class Filter extends AbstractComponent {
+export default class Filter extends AbstractComponent {
   constructor(filters) {
     super();
     this._filters = filters;
@@ -44,14 +44,14 @@ export class Filter extends AbstractComponent {
     return createFiltersTemplate(this._filters);
   }
 
+  _setUIHandlers() {
+    this._element.addEventListener(`change`, this._onChange);
+  }
+
   setFilterTypeChangeHandler(handler) {
     if (typeof handler === `function`) {
       this._handler = handler;
     }
-  }
-
-  _setUIHandlers() {
-    this._element.addEventListener(`change`, this._onChange); // debounce?
   }
 
   _onChange() {
