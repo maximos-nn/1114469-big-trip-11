@@ -144,9 +144,7 @@ const isInt = (strValue) => {
   return /^[0-9]+/.test(strValue);
 };
 
-const createEditFormTemplate = (eventTypes, event, destinations, captions) => {
-  event = event || EmptyEvent;
-  const isEditMode = event !== EmptyEvent;
+const createEditFormTemplate = (eventTypes, event, destinations, captions, isEditMode) => {
   const destinationOptions = Array.from(destinations.keys());
   const {type, preposition, offers, destination, price, startDate, endDate, isFavorite} = event;
 
@@ -241,6 +239,9 @@ export class EditForm extends AbstractSmartComponent {
     this._originalEvent = event || EmptyEvent;
     this._isEditMode = this._originalEvent !== EmptyEvent;
     this._event = Object.assign({}, event);
+    if (!this._isEditMode) {
+      this._event.offers = getEventTypeData(eventTypes, this._event.type).offers;
+    }
     this._destinationInfoMap = new Map(destinations.map((it) => [it.destination, it.destinationInfo]));
     this._submitHandler = null;
     this._resetHandler = null;
@@ -257,7 +258,8 @@ export class EditForm extends AbstractSmartComponent {
         this._eventTypes,
         this._event,
         this._destinationInfoMap,
-        this._buttonCaptions
+        this._buttonCaptions,
+        this._isEditMode
     );
   }
 
