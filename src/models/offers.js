@@ -13,7 +13,7 @@ const types = [
   }
 ];
 
-const setOffer = (offer) => Object.assign({}, offer, {name: offer.title.toLowerCase().replace(` `, `-`), isSelected: false});
+const setOffer = (offer) => Object.assign({}, offer, {name: offer.title.toLowerCase().replace(/ /g, `-`), isSelected: false});
 
 const setOffers = (group, typeOffers) => {
   group.offers = group.types.reduce((resultObj, type) => {

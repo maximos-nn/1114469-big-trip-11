@@ -6,28 +6,16 @@ const BAR_HEIGHT = 55;
 const MIN_CHART_HIGHT = 150;
 const MS_PER_HOUR = 3600000;
 
-const mapPriceToType = (resultMap, event) => {
-  const key = event.type;
-  if (!resultMap.has(key)) {
-    resultMap.set(key, 0);
-  }
-  resultMap.set(key, resultMap.get(key) + event.price);
-  return resultMap;
-};
+const renderChart = (ctx, totals, title, prefix, suffix) => {
+  ctx.height = Math.max(BAR_HEIGHT * totals.size, MIN_CHART_HIGHT);
 
-const getSumByEventType = (events) => events.reduce(mapPriceToType, new Map());
-
-const renderMoneyChart = (moneyCtx, events) => {
-  const sumByEventType = getSumByEventType(events);
-  moneyCtx.height = Math.max(BAR_HEIGHT * sumByEventType.size, MIN_CHART_HIGHT);
-
-  return new Chart(moneyCtx, {
+  return new Chart(ctx, {
     plugins: [ChartDataLabels],
     type: `horizontalBar`,
     data: {
-      labels: Array.from(sumByEventType.keys()),
+      labels: Array.from(totals.keys()),
       datasets: [{
-        data: Array.from(sumByEventType.values()),
+        data: Array.from(totals.values()),
         backgroundColor: `#ffffff`,
         hoverBackgroundColor: `#ffffff`,
         anchor: `start`
@@ -42,12 +30,12 @@ const renderMoneyChart = (moneyCtx, events) => {
           color: `#000000`,
           anchor: `end`,
           align: `start`,
-          formatter: (val) => `€ ${val}`
+          formatter: (val) => `${prefix}${val}${suffix}`
         }
       },
       title: {
         display: true,
-        text: `MONEY`,
+        text: title,
         fontColor: `#000000`,
         fontSize: 23,
         position: `left`
@@ -85,6 +73,22 @@ const renderMoneyChart = (moneyCtx, events) => {
       }
     }
   });
+};
+
+const mapPriceToType = (resultMap, event) => {
+  const key = event.type;
+  if (!resultMap.has(key)) {
+    resultMap.set(key, 0);
+  }
+  resultMap.set(key, resultMap.get(key) + event.price);
+  return resultMap;
+};
+
+const getSumByEventType = (events) => events.reduce(mapPriceToType, new Map());
+
+const renderMoneyChart = (moneyCtx, events) => {
+  const sumByEventType = getSumByEventType(events);
+  return renderChart(moneyCtx, sumByEventType, `MONEY`, `€ `, ``);
 };
 
 const mapCountToType = (resultMap, event) => {
@@ -100,72 +104,7 @@ const getCountByEventType = (events) => events.reduce(mapCountToType, new Map())
 
 const renderTransportChart = (transportCtx, events) => {
   const countByType = getCountByEventType(events);
-  transportCtx.height = Math.max(BAR_HEIGHT * countByType.size, MIN_CHART_HIGHT);
-
-  return new Chart(transportCtx, {
-    plugins: [ChartDataLabels],
-    type: `horizontalBar`,
-    data: {
-      labels: Array.from(countByType.keys()),
-      datasets: [{
-        data: Array.from(countByType.values()),
-        backgroundColor: `#ffffff`,
-        hoverBackgroundColor: `#ffffff`,
-        anchor: `start`
-      }]
-    },
-    options: {
-      plugins: {
-        datalabels: {
-          font: {
-            size: 13
-          },
-          color: `#000000`,
-          anchor: `end`,
-          align: `start`,
-          formatter: (val) => `${val}x`
-        }
-      },
-      title: {
-        display: true,
-        text: `TRANSPORT`,
-        fontColor: `#000000`,
-        fontSize: 23,
-        position: `left`
-      },
-      scales: {
-        yAxes: [{
-          ticks: {
-            fontColor: `#000000`,
-            padding: 5,
-            fontSize: 13,
-          },
-          gridLines: {
-            display: false,
-            drawBorder: false
-          },
-          barThickness: 44,
-        }],
-        xAxes: [{
-          ticks: {
-            display: false,
-            beginAtZero: true,
-          },
-          gridLines: {
-            display: false,
-            drawBorder: false
-          },
-          minBarLength: 50
-        }],
-      },
-      legend: {
-        display: false
-      },
-      tooltips: {
-        enabled: false,
-      }
-    }
-  });
+  return renderChart(transportCtx, countByType, `TRANSPORT`, ``, `x`);
 };
 
 const mapDurationToType = (resultMap, event) => {
@@ -182,73 +121,10 @@ const getTimeByEventType = (events) => events.reduce(mapDurationToType, new Map(
 
 const renderTimeSpentChart = (timeSpentCtx, events) => {
   const timeByType = getTimeByEventType(events);
-  const durationInHours = Array.from(timeByType.values()).map((duration) => Math.floor(duration / MS_PER_HOUR));
-  timeSpentCtx.height = Math.max(BAR_HEIGHT * timeByType.size, MIN_CHART_HIGHT);
-
-  return new Chart(timeSpentCtx, {
-    plugins: [ChartDataLabels],
-    type: `horizontalBar`,
-    data: {
-      labels: Array.from(timeByType.keys()),
-      datasets: [{
-        data: durationInHours,
-        backgroundColor: `#ffffff`,
-        hoverBackgroundColor: `#ffffff`,
-        anchor: `start`
-      }]
-    },
-    options: {
-      plugins: {
-        datalabels: {
-          font: {
-            size: 13
-          },
-          color: `#000000`,
-          anchor: `end`,
-          align: `start`,
-          formatter: (val) => `${val}H`
-        }
-      },
-      title: {
-        display: true,
-        text: `TIME SPENT`,
-        fontColor: `#000000`,
-        fontSize: 23,
-        position: `left`
-      },
-      scales: {
-        yAxes: [{
-          ticks: {
-            fontColor: `#000000`,
-            padding: 5,
-            fontSize: 13,
-          },
-          gridLines: {
-            display: false,
-            drawBorder: false
-          },
-          barThickness: 44,
-        }],
-        xAxes: [{
-          ticks: {
-            display: false,
-            beginAtZero: true,
-          },
-          gridLines: {
-            display: false,
-            drawBorder: false
-          },
-          minBarLength: 50
-        }],
-      },
-      legend: {
-        display: false
-      },
-      tooltips: {
-        enabled: false,
-      }
-    }
+  timeByType.forEach((duration, type, map) => {
+    map.set(type, Math.floor(duration / MS_PER_HOUR));
   });
+  return renderChart(timeSpentCtx, timeByType, `TIME SPENT`, ``, `H`);
 };
 
 const createStatisticsTemplate = () => {

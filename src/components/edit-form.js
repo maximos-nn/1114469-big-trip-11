@@ -19,6 +19,11 @@ export const EmptyEvent = {
   isFavorite: false
 };
 
+const DefaultButtonCaption = {
+  deleteButton: `Delete`,
+  saveButton: `Save`
+};
+
 const createEventTypeMarkup = (type, currentType) => {
   const checkedAttrib = type === currentType ? `checked` : ``;
   const title = capitalizeFirstLetter(type);
@@ -139,21 +144,18 @@ const isInt = (strValue) => {
   return /^[0-9]+/.test(strValue);
 };
 
-const createEditFormTemplate = (eventTypes, event, price, typeOptions, currentDestination, destinations) => {
-  event = event || EmptyEvent;
-  const isEditMode = event !== EmptyEvent;
+const createEditFormTemplate = (eventTypes, event, destinations, captions, isEditMode) => {
   const destinationOptions = Array.from(destinations.keys());
-  const {startDate, endDate, isFavorite} = event;
-  const {type, preposition, offers} = typeOptions;
-  const {destination, destinationInfo} = currentDestination;
+  const {type, preposition, offers, destination, price, startDate, endDate, isFavorite} = event;
 
   const isSaveButtonDisabled = !destinations.has(destination) || !isInt(price);
   const destinationLabelText = type ? `${capitalizeFirstLetter(type)} ${preposition}` : ``;
   const eventTypeIcon = type ? `<img class="event__type-icon" width="17" height="17" src="img/icons/${type}.png" alt="Event type icon">` : ``;
   const positionClass = isEditMode ? `` : `trip-events__item`;
-  const resetButtonCaption = isEditMode ? `Delete` : `Cancel`;
+  const resetButtonCaption = isEditMode ? captions.deleteButton : `Cancel`;
+  const submitButtonCaption = captions.saveButton;
   const editModeControls = isEditMode ? createEditModeControls(isFavorite) : ``;
-  const detailsMarkup = createDetailsMarkup(offers, destinationInfo);
+  const detailsMarkup = createDetailsMarkup(offers, destinations.get(destination));
   const startDateValue = `${formatDate(startDate)} ${formatTime(startDate)}`;
   const endDateValue = `${formatDate(endDate)} ${formatTime(endDate)}`;
 
@@ -202,7 +204,7 @@ const createEditFormTemplate = (eventTypes, event, price, typeOptions, currentDe
         <input class="event__input  event__input--price" id="event-price-1" type="number" step="1" pattern="\d+" name="event-price" value="${price}">
       </div>
 
-      <button class="event__save-btn  btn  btn--blue" type="submit" ${isSaveButtonDisabled ? `disabled` : ``}>Save</button>
+      <button class="event__save-btn  btn  btn--blue" type="submit" ${isSaveButtonDisabled ? `disabled` : ``}>${submitButtonCaption}</button>
       <button class="event__reset-btn" type="reset">${resetButtonCaption}</button>
 
       ${editModeControls}
@@ -234,12 +236,12 @@ export class EditForm extends AbstractSmartComponent {
   constructor(eventTypes, event, destinations) {
     super();
     this._eventTypes = eventTypes;
-    this._event = event || EmptyEvent;
-    this._isEditMode = this._event !== EmptyEvent;
-    this._type = this._event.type;
-    this._destination = this._event.destination;
-    this._offers = this._event.offers;
-    this._price = this._event.price;
+    this._originalEvent = event || EmptyEvent;
+    this._isEditMode = this._originalEvent !== EmptyEvent;
+    this._event = Object.assign({}, event);
+    if (!this._isEditMode) {
+      this._event.offers = getEventTypeData(eventTypes, this._event.type).offers;
+    }
     this._destinationInfoMap = new Map(destinations.map((it) => [it.destination, it.destinationInfo]));
     this._submitHandler = null;
     this._resetHandler = null;
@@ -247,6 +249,7 @@ export class EditForm extends AbstractSmartComponent {
     this._closeButtonClickHandler = null;
     this._startFlatpickr = null;
     this._endFlatpickr = null;
+    this._buttonCaptions = DefaultButtonCaption;
     this._applyFlatpickr();
   }
 
@@ -254,13 +257,9 @@ export class EditForm extends AbstractSmartComponent {
     return createEditFormTemplate(
         this._eventTypes,
         this._event,
-        this._price,
-        Object.assign({}, getEventTypeData(this._eventTypes, this._type), {offers: this._offers}),
-        {
-          destination: this._destination,
-          destinationInfo: this._destinationInfoMap.get(this._destination)
-        },
-        this._destinationInfoMap
+        this._destinationInfoMap,
+        this._buttonCaptions,
+        this._isEditMode
     );
   }
 
@@ -281,10 +280,7 @@ export class EditForm extends AbstractSmartComponent {
   }
 
   reset() {
-    this._type = this._event.type;
-    this._offers = this._event.offers;
-    this._destination = this._event.destination;
-    this._price = this._event.price;
+    this._event = Object.assign({}, this._originalEvent);
     this.rerender();
   }
 
@@ -307,6 +303,29 @@ export class EditForm extends AbstractSmartComponent {
   getData() {
     const formData = new FormData(this.getElement());
     return parseFormData(formData, this._eventTypes, this._destinationInfoMap);
+  }
+
+  setButtonCaptions(captions) {
+    this._buttonCaptions = Object.assign({}, DefaultButtonCaption, captions);
+    this.rerender();
+  }
+
+  enable() {
+    this._toggle(false);
+  }
+
+  disable() {
+    this._toggle(true);
+  }
+
+  _toggle(disabled) {
+    const element = this.getElement();
+    element.querySelectorAll(`input`).forEach((input) => {
+      input.disabled = disabled;
+    });
+    element.querySelectorAll(`button`).forEach((button) => {
+      button.disabled = disabled;
+    });
   }
 
   _applyFlatpickr() {
@@ -332,30 +351,53 @@ export class EditForm extends AbstractSmartComponent {
 
   _setUIHandlers() {
     const element = this.getElement();
+    const saveButton = element.querySelector(`.event__save-btn`);
 
-    Array.from(element.querySelectorAll(`input[name="event-type"]`)).forEach((input) => {
+    element.querySelectorAll(`input[name="event-type"]`).forEach((input) => {
       input.addEventListener(`change`, (evt) => {
-        this._type = evt.target.value;
-        this._offers = getEventTypeData(this._eventTypes, this._type).offers || [];
+        this._event.type = evt.target.value;
+        this._event.offers = getEventTypeData(this._eventTypes, this._event.type).offers || [];
         this.rerender();
       });
     });
 
     element.querySelector(`#event-destination-1`).addEventListener(`change`, (evt) => {
-      this.getElement().querySelector(`.event__save-btn`).disabled = true;
+      saveButton.disabled = true;
       if (this._destinationInfoMap.has(evt.target.value)) {
-        this._destination = evt.target.value;
+        this._event.destination = evt.target.value;
         this.rerender();
       }
     });
 
     element.querySelector(`#event-price-1`).addEventListener(`change`, (evt) => {
-      this.getElement().querySelector(`.event__save-btn`).disabled = true;
+      saveButton.disabled = true;
       if (isInt(evt.target.value)) {
-        this._price = evt.target.value;
-        this.rerender();
+        this._event.price = evt.target.value;
+        saveButton.disabled = false;
       }
     });
+
+    element.querySelector(`#event-start-time-1`).addEventListener(`change`, (evt) => {
+      this._event.startDate = new Date(evt.target.value);
+    });
+
+    element.querySelector(`#event-end-time-1`).addEventListener(`change`, (evt) => {
+      this._event.endDate = new Date(evt.target.value);
+    });
+
+    const offersElements = element.querySelectorAll(`.event__offer-checkbox`);
+    if (offersElements) {
+      offersElements.forEach((input) => {
+        input.addEventListener(`change`, (evt) => {
+          const index = this._event.offers.findIndex((offer) => `event-offer-${offer.name}` === evt.target.name);
+          if (index === -1) {
+            return;
+          }
+          const newOffer = Object.assign({}, this._event.offers[index], {isSelected: evt.target.checked});
+          this._event.offers = [].concat(this._event.offers.slice(0, index), newOffer, this._event.offers.slice(index + 1));
+        });
+      });
+    }
 
     element.addEventListener(`submit`, (evt) => {
       if (this._submitHandler) {

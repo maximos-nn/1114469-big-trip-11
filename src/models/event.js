@@ -1,17 +1,17 @@
 import {getEventTypeData} from "../utils/common";
 
 export class Event {
-  constructor(data) {
-    this.id = data[`id`];
-    this.type = data[`type`];
-    this.preposition = data[`preposition`];
-    this.price = data[`base_price`];
-    this.startDate = new Date(data[`date_from`]);
-    this.endDate = new Date(data[`date_to`]);
-    this.destination = data[`destination`][`name`];
-    this.destinationInfo = {description: data[`destination`][`description`], photos: data[`destination`][`pictures`]};
-    this.offers = data[`offers`];
-    this.isFavorite = Boolean(data[`is_favorite`]);
+  constructor(event) {
+    this.id = event[`id`];
+    this.type = event[`type`];
+    this.preposition = event[`preposition`];
+    this.price = event[`base_price`];
+    this.startDate = new Date(event[`date_from`]);
+    this.endDate = new Date(event[`date_to`]);
+    this.destination = event[`destination`][`name`];
+    this.destinationInfo = {description: event[`destination`][`description`], photos: event[`destination`][`pictures`]};
+    this.offers = event[`offers`];
+    this.isFavorite = Boolean(event[`is_favorite`]);
   }
 
   toRaw() {
@@ -31,35 +31,35 @@ export class Event {
     };
   }
 
-  static parseEvent(data, eventTypes) {
-    const {preposition, offers} = getEventTypeData(eventTypes, data[`type`]);
-    data[`offers`] = offers.map((offer) => Object.assign({}, offer, {isSelected: data[`offers`].findIndex((selected) => selected.title === offer.title) > -1}));
-    return new Event(Object.assign(data, {preposition}));
+  static parseEvent(event, eventTypes) {
+    const {preposition, offers} = getEventTypeData(eventTypes, event[`type`]);
+    event[`offers`] = offers.map((offer) => Object.assign({}, offer, {isSelected: event[`offers`].findIndex((selected) => selected.title === offer.title) > -1}));
+    return new Event(Object.assign(event, {preposition}));
   }
 
-  static parseEvents(data, eventTypes) {
-    return data.map((event) => Event.parseEvent(event, eventTypes));
+  static parseEvents(events, eventTypes) {
+    return events.map((event) => Event.parseEvent(event, eventTypes));
   }
 
-  static clone(data) {
-    return new Event(data.toRaw());
+  static clone(event) {
+    return new Event(event.toRaw());
   }
 
-  static create(data) {
+  static create(event) {
     return new Event({
-      [`id`]: data.id,
-      [`type`]: data.type,
-      [`preposition`]: data.preposition,
-      [`base_price`]: data.price,
-      [`date_from`]: data.startDate.toISOString(),
-      [`date_to`]: data.endDate.toISOString(),
+      [`id`]: event.id,
+      [`type`]: event.type,
+      [`preposition`]: event.preposition,
+      [`base_price`]: event.price,
+      [`date_from`]: event.startDate.toISOString(),
+      [`date_to`]: event.endDate.toISOString(),
       [`destination`]: {
-        [`name`]: data.destination,
-        [`description`]: data.destinationInfo.description,
-        [`pictures`]: data.destinationInfo.photos
+        [`name`]: event.destination,
+        [`description`]: event.destinationInfo.description,
+        [`pictures`]: event.destinationInfo.photos
       },
-      [`offers`]: data.offers,
-      [`is_favorite`]: data.isFavorite
+      [`offers`]: event.offers,
+      [`is_favorite`]: event.isFavorite
     });
   }
 }

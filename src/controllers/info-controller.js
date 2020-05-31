@@ -17,8 +17,10 @@ export class InfoController {
     const oldInfoComponent = this._tripInfoComponent;
     const oldCostComponent = this._tripCostComponent;
 
-    this._tripInfoComponent = new TripInfo(this._model.allEvents);
-    this._tripCostComponent = new TripCost(this._model.allEvents);
+    const events = this._model.allEvents.slice().sort((a, b) => a.startDate - b.startDate);
+
+    this._tripInfoComponent = new TripInfo(events);
+    this._tripCostComponent = new TripCost(events);
 
     if (oldInfoComponent && oldCostComponent) {
       replace(this._tripInfoComponent, oldInfoComponent);
