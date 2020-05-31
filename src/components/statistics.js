@@ -1,4 +1,4 @@
-import {AbstractSmartComponent} from "./abstract-smart-component";
+import AbstractSmartComponent from "./abstract-smart-component";
 import Chart from "chart.js";
 import ChartDataLabels from "chartjs-plugin-datalabels";
 
@@ -147,7 +147,7 @@ const createStatisticsTemplate = () => {
   );
 };
 
-export class Statistics extends AbstractSmartComponent {
+export default class Statistics extends AbstractSmartComponent {
   constructor(model) {
     super();
     this._model = model;

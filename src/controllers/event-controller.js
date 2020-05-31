@@ -1,17 +1,17 @@
-import {EditForm, EmptyEvent} from "../components/edit-form";
-import {Event} from "../components/event";
-import {Event as EventModel} from "../models/event";
+import EditForm, {EmptyEvent} from "../components/edit-form";
+import Event from "../components/event";
+import EventModel from "../models/event";
 import {render, replace, remove} from "../utils/render";
 
 const SHAKE_ANIMATION_TIMEOUT = 600;
 
-export const Mode = {
+const Mode = {
   ADDING: `adding`,
   DEFAULT: `default`,
   EDIT: `edit`
 };
 
-export class EventController {
+export default class EventController {
   constructor(container, eventTypes, destinations, onDataChange, onViewChange) {
     this._container = container;
     this._eventTypes = eventTypes;
@@ -145,3 +145,5 @@ export class EventController {
     }
   }
 }
+
+export {Mode};

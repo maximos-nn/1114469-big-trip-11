@@ -1,6 +1,6 @@
-import {AbstractComponent} from "./abstract-component";
+import AbstractComponent from "./abstract-component";
 
-export class AbstractSmartComponent extends AbstractComponent {
+export default class AbstractSmartComponent extends AbstractComponent {
   rerender() {
     const oldElement = this.getElement();
     const parent = oldElement.parentElement;

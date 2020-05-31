@@ -1,12 +1,12 @@
-import {API} from "./api";
-import {Events} from "./models/events";
-import {FilterController} from "./controllers/filter-controller";
-import {InfoController} from "./controllers/info-controller";
-import {Loading} from "./components/loading";
-import {Menu, MenuItem} from "./components/menu";
-import {Statistics} from "./components/statistics";
-import {TripController} from "./controllers/trip-controller";
-import {TripEvents} from "./components/trip-events";
+import API from "./api";
+import Events from "./models/events";
+import FilterController from "./controllers/filter-controller";
+import InfoController from "./controllers/info-controller";
+import Loading from "./components/loading";
+import Menu, {MenuItem} from "./components/menu";
+import Statistics from "./components/statistics";
+import TripController from "./controllers/trip-controller";
+import TripEvents from "./components/trip-events";
 import {render, RenderPosition, remove} from "./utils/render";
 
 const HIDDEN_CLASS = `visually-hidden`;
@@ -20,34 +20,14 @@ const tripMainElement = document.querySelector(`.trip-main`);
 const tripInfoController = new InfoController(tripMainElement, eventsModel);
 const tripControlsElement = tripMainElement.querySelector(`.trip-main__trip-controls`);
 const menuComponent = new Menu();
-menuComponent.setActiveItem(MenuItem.TABLE);
 const filterController = new FilterController(tripControlsElement, eventsModel);
+const addEventButton = tripMainElement.querySelector(`.trip-main__event-add-btn`);
 
 const bodyContainer = document.querySelector(`.page-body__page-main .page-body__container`);
 const tripEventsComponent = new TripEvents();
 const loadingComponent = new Loading();
 const tripController = new TripController(tripEventsComponent, eventsModel, api);
 const statisticsComponent = new Statistics(eventsModel);
-
-tripInfoController.render();
-render(tripControlsElement.querySelector(`h2`), menuComponent, RenderPosition.AFTEREND);
-filterController.render();
-
-render(bodyContainer, tripEventsComponent);
-render(tripEventsComponent.getElement(), loadingComponent);
-render(bodyContainer, statisticsComponent);
-statisticsComponent.hide(HIDDEN_CLASS);
-
-const addEventButton = tripMainElement.querySelector(`.trip-main__event-add-btn`);
-addEventButton.disabled = true;
-addEventButton.addEventListener(`click`, (evt) => {
-  evt.preventDefault();
-  addEventButton.disabled = true;
-  filterController.reset();
-  tripController.createEvent(() => {
-    addEventButton.disabled = false;
-  });
-});
 
 const menuItemChangeHandler = (menuItem) => {
   menuComponent.setActiveItem(menuItem);
@@ -62,6 +42,26 @@ const menuItemChangeHandler = (menuItem) => {
       break;
   }
 };
+
+menuComponent.setActiveItem(MenuItem.TABLE);
+tripInfoController.render();
+render(tripControlsElement.querySelector(`h2`), menuComponent, RenderPosition.AFTEREND);
+filterController.render();
+
+render(bodyContainer, tripEventsComponent);
+render(tripEventsComponent.getElement(), loadingComponent);
+render(bodyContainer, statisticsComponent);
+statisticsComponent.hide(HIDDEN_CLASS);
+
+addEventButton.disabled = true;
+addEventButton.addEventListener(`click`, (evt) => {
+  evt.preventDefault();
+  addEventButton.disabled = true;
+  filterController.reset();
+  tripController.createEvent(() => {
+    addEventButton.disabled = false;
+  });
+});
 
 api.getData()
   .then((data) => {

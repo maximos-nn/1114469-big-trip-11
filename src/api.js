@@ -1,6 +1,6 @@
-import {Event} from "./models/event";
-import {Offers} from "./models/offers";
-import {Store} from "./store";
+import Event from "./models/event";
+import Offers from "./models/offers";
+import Store from "./store";
 
 const URLS = [`destinations`, `offers`, `points`];
 
@@ -24,7 +24,7 @@ const checkStatus = (response) => {
   }
 };
 
-export class API {
+export default class API {
   constructor(endPoint, authorization) {
     this._endPoint = endPoint;
     this._authorization = authorization;

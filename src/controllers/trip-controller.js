@@ -1,10 +1,9 @@
-import {Day} from "../components/day";
-import {DayList} from "../components/days-list";
-import {EventController} from "./event-controller";
-import {Mode as EventControllerMode} from "./event-controller";
+import Day from "../components/day";
+import DayList from "../components/days-list";
+import EventController, {Mode as EventControllerMode} from "./event-controller";
 import {EmptyEvent} from "../components/edit-form";
-import {NoEvents} from "../components/no-events";
-import {Sort, SortType} from "../components/sort";
+import NoEvents from "../components/no-events";
+import Sort, {SortType} from "../components/sort";
 import {render, remove} from "../utils/render";
 import {getDate} from "../utils/common";
 
@@ -26,16 +25,13 @@ const groupByDays = (events) => events.reduce(mapEventToDate, new Map());
 const renderEvents = (events, eventTypes, destinations, container, onDataChange, onViewChange) => {
   const controllers = [];
   let currentDay = 1;
-  for (const [key, dayEvents] of events) { // [...eventsByDays.keys()].forEach((date, index) => {});
+  for (const [key, dayEvents] of events) {
 
-    // День. Содержит список точек. В режиме сортировки блок day__info должен быть пустым.
     const tripDayComponent = new Day(currentDay++, key && new Date(key));
     const tripDayElement = tripDayComponent.getElement();
     render(container, tripDayComponent);
-    // Элемент списка точек в контейнере (дне).
     const tripEventListElement = tripDayElement.querySelector(`.trip-events__list`);
 
-    // Точки маршрута.
     for (const event of dayEvents) {
       const eventController = new EventController(
           tripEventListElement,
@@ -62,7 +58,7 @@ const sortEvents = (events, sortType) => {
   }
 };
 
-export class TripController {
+export default class TripController {
   constructor(container, eventsModel, api) {
     this._containerComponent = container;
     this._container = container.getElement();
@@ -114,8 +110,6 @@ export class TripController {
   }
 
   _renderDays(sortType) {
-    // Список дней и контейнер для точек маршрута. Выводим только при наличии точек.
-    // Должен содержать как минимум один элемент. В режиме сортировки используется только один элемент.
     render(this._container, this._dayListComponent);
     const sortedEvents = sortEvents(this._eventsModel.events, sortType);
     this._eventControllers = renderEvents(
@@ -140,13 +134,11 @@ export class TripController {
       return;
     }
 
-    // Форма сортировки, заголовки столбцов. Выводим только при наличии точек маршрута.
     render(this._container, this._sortComponent);
     this._sortComponent.setSortTypeChangeHandler((newSortType) => {
       this._updateEvents(newSortType);
     });
 
-    // Форма создания/редактирования точки в режиме создания. Выводим в самом начале.
     if (this._newEvent) {
       this._newEvent.render(EmptyEvent, EventControllerMode.ADDING);
     }

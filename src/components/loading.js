@@ -1,4 +1,4 @@
-import {AbstractComponent} from "./abstract-component";
+import AbstractComponent from "./abstract-component";
 
 const createLoadingTemplate = () => {
   return (
@@ -6,7 +6,7 @@ const createLoadingTemplate = () => {
   );
 };
 
-export class Loading extends AbstractComponent {
+export default class Loading extends AbstractComponent {
   getTemplate() {
     return createLoadingTemplate();
   }

@@ -1,10 +1,10 @@
-export const FilterType = {
+const FilterType = {
   EVERYTHING: `everything`,
   FUTURE: `future`,
   PAST: `past`
 };
 
-export const filterEvents = (events, filterType) => {
+const filterEvents = (events, filterType) => {
   switch (filterType) {
     case FilterType.FUTURE:
       return events.filter((event) => event.startDate > new Date());
@@ -14,3 +14,5 @@ export const filterEvents = (events, filterType) => {
       return events;
   }
 };
+
+export {FilterType, filterEvents};
