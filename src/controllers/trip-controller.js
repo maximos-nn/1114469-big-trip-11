@@ -173,26 +173,48 @@ export class TripController {
   }
 
   _onDataChange(eventController, oldData, newData) {
+    eventController.clearErrorStyle();
     if (oldData === EmptyEvent) {
-      this._newEvent = null;
-      if (newData !== null) {
-        this._eventsModel.addEvent(newData);
-      }
-      eventController.clean();
-      this._updateContainer();
-      this._onNewEventHandled();
-    } else if (newData === null) {
-      this._eventsModel.removeEvent(oldData.id);
-      if (this._eventsModel.events.length) {
-        this._updateEvents(this._sortComponent.getSortType());
-      } else {
+      const update = () => {
+        eventController.clean();
         this._updateContainer();
+        this._onNewEventHandled();
+      };
+
+      this._newEvent = null;
+      if (newData === null) {
+        update();
+      } else {
+        this._api.createEvent(newData)
+          .then((event) => {
+            this._eventsModel.addEvent(event);
+            update();
+          })
+          .catch(() => {
+            eventController.shake();
+          });
       }
+    } else if (newData === null) {
+      this._api.deleteEvent(oldData.id)
+        .then(() => {
+          this._eventsModel.removeEvent(oldData.id);
+          if (this._eventsModel.events.length) {
+            this._updateEvents(this._sortComponent.getSortType());
+          } else {
+            this._updateContainer();
+          }
+        })
+        .catch(() => {
+          eventController.shake();
+        });
     } else {
       this._api.updateEvent(oldData.id, newData)
         .then((event) => {
           this._eventsModel.updateEvent(oldData.id, event);
           this._updateEvents(this._sortComponent.getSortType());
+        })
+        .catch(() => {
+          eventController.shake();
         });
     }
   }

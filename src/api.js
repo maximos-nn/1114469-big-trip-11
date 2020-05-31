@@ -52,15 +52,34 @@ export class API {
       });
   }
 
-  updateEvent(id, data) {
+  createEvent(newEvent) {
     return this._load({
-      url: `points/${id}`,
-      method: Method.PUT,
-      body: JSON.stringify(data.toRaw()),
+      url: `points`,
+      method: Method.POST,
+      body: JSON.stringify(newEvent.toRaw()),
       headers: new Headers({"Content-Type": `application/json`})
     })
       .then((response) => response.json())
-      .then((event) => Event.parseEvent(event, Store.eventTypes));
+      .then(this._parseResponse);
+  }
+
+  updateEvent(id, newEvent) {
+    return this._load({
+      url: `points/${id}`,
+      method: Method.PUT,
+      body: JSON.stringify(newEvent.toRaw()),
+      headers: new Headers({"Content-Type": `application/json`})
+    })
+      .then((response) => response.json())
+      .then(this._parseResponse);
+  }
+
+  deleteEvent(id) {
+    return this._load({url: `points/${id}`, method: Method.DELETE});
+  }
+
+  _parseResponse(event) {
+    return Event.parseEvent(event, Store.eventTypes);
   }
 
   _load({url, method = Method.GET, body = null, headers = new Headers()}) {
