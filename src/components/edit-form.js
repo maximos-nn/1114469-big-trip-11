@@ -228,7 +228,7 @@ const parseFormData = (formData, eventTypes, destinationInfoMap) => {
     price: parseInt(formData.get(`event-price`), 10),
     offers: newOffers,
     destinationInfo: destinationInfoMap.get(destination),
-    isFavorite: formData.has(`event-favorite`) ? !!formData.get(`event-favorite`) : false
+    isFavorite: !!formData.get(`event-favorite`)
   };
 };
 

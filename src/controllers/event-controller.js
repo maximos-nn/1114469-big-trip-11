@@ -41,9 +41,9 @@ export default class EventController {
     this._eventEditComponent.setSubmitHandler((evt) => {
       evt.preventDefault();
       this._eventEditComponent.setButtonCaptions({saveButton: `Saving...`});
-      const data = this._eventEditComponent.getData();
+      const formEvent = this._eventEditComponent.getData();
       this._eventEditComponent.disable();
-      this._onDataChange(this, event, EventModel.create(data));
+      this._onDataChange(this, event, EventModel.create(formEvent));
     });
 
     this._eventEditComponent.setResetHandler((evt) => {
@@ -56,6 +56,8 @@ export default class EventController {
     this._eventEditComponent.setFavoriteButtonClickHandler(() => {
       const newEvent = EventModel.clone(event);
       newEvent.isFavorite = !newEvent.isFavorite;
+      newEvent.offers = newEvent.offers.filter((offer) => offer.isSelected);
+      this._eventEditComponent.disable();
       this._onDataChange(this, event, newEvent);
     });
 
