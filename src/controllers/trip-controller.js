@@ -200,10 +200,15 @@ export default class TripController {
           eventController.shake();
         });
     } else {
+      console.log(oldData, newData);
       this._api.updateEvent(oldData.id, newData)
         .then((event) => {
           this._eventsModel.updateEvent(oldData.id, event);
-          this._updateEvents(this._sortComponent.getSortType());
+          if (oldData.isFavorite === newData.isFavorite) {
+            this._updateEvents(this._sortComponent.getSortType());
+          } else {
+            eventController.render(event, EventControllerMode.EDIT);
+          }
         })
         .catch(() => {
           eventController.shake();

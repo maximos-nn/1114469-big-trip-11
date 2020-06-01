@@ -70,6 +70,7 @@ export default class EventController {
       newEvent.isFavorite = !newEvent.isFavorite;
       this._eventEditComponent.disable();
       this._onDataChange(this, event, newEvent);
+      this._eventEditComponent.enable();
     });
 
     this._eventEditComponent.setCloseButtonClickHandler(() => {

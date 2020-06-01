@@ -5,6 +5,7 @@ import ChartDataLabels from "chartjs-plugin-datalabels";
 const BAR_HEIGHT = 55;
 const MIN_CHART_HIGHT = 150;
 const MS_PER_HOUR = 3600000;
+const TRANSPORT_TYPES = [`taxi`, `bus`, `train`, `ship`, `transport`, `drive`, `flight`];
 
 const renderChart = (ctx, totals, title, prefix, suffix) => {
   ctx.height = Math.max(BAR_HEIGHT * totals.size, MIN_CHART_HIGHT);
@@ -13,7 +14,7 @@ const renderChart = (ctx, totals, title, prefix, suffix) => {
     plugins: [ChartDataLabels],
     type: `horizontalBar`,
     data: {
-      labels: Array.from(totals.keys()),
+      labels: Array.from(totals.keys()).map((label) => label.toUpperCase()),
       datasets: [{
         data: Array.from(totals.values()),
         backgroundColor: `#ffffff`,
@@ -104,7 +105,13 @@ const getCountByEventType = (events) => events.reduce(mapCountToType, new Map())
 
 const renderTransportChart = (transportCtx, events) => {
   const countByType = getCountByEventType(events);
-  return renderChart(transportCtx, countByType, `TRANSPORT`, ``, `x`);
+  const transportTotals = new Map();
+  TRANSPORT_TYPES.forEach((type) => {
+    if (countByType.has(type)) {
+      transportTotals.set(type, countByType.get(type));
+    }
+  });
+  return renderChart(transportCtx, transportTotals, `TRANSPORT`, ``, `x`);
 };
 
 const mapDurationToType = (result, event) => {
