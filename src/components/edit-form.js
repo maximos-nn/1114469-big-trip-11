@@ -217,11 +217,10 @@ const createEditFormTemplate = (eventTypes, event, destinations, captions, isEdi
 const parseFormData = (formData, eventTypes, destinationInfoMap) => {
   const destination = formData.get(`event-destination`);
   const type = formData.get(`event-type`);
-  const {preposition, offers} = getEventTypeData(eventTypes, type);
-  const newOffers = (offers || []).filter((offer) => !!formData.get(`event-offer-${offer.name}`)).map((offer) => Object.assign({}, offer, {isSelected: true}));
+  const offers = getEventTypeData(eventTypes, type).offers;
+  const newOffers = (offers || []).filter((offer) => !!formData.get(`event-offer-${offer.name}`)).map((offer) => Object.assign({}, {title: offer.title, price: offer.price}));
   return {
     type,
-    preposition: preposition || ``,
     destination,
     startDate: new Date(formData.get(`event-start-time`)),
     endDate: new Date(formData.get(`event-end-time`)),
@@ -236,12 +235,9 @@ export default class EditForm extends AbstractSmartComponent {
   constructor(eventTypes, event, destinations) {
     super();
     this._eventTypes = eventTypes;
-    this._originalEvent = event || EmptyEvent;
-    this._isEditMode = this._originalEvent !== EmptyEvent;
-    this._event = Object.assign({}, event);
-    if (!this._isEditMode) {
-      this._event.offers = getEventTypeData(eventTypes, this._event.type).offers;
-    }
+    this._originalEvent = event;
+    this._isEditMode = !event.isNew;
+    this._event = event;
     this._destinationInfoMap = new Map(destinations.map((it) => [it.destination, it.destinationInfo]));
     this._submitHandler = null;
     this._resetHandler = null;

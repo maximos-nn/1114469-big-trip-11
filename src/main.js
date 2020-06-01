@@ -1,20 +1,38 @@
-import API from "./api";
+import API from "./api/api";
 import Events from "./models/events";
 import FilterController from "./controllers/filter-controller";
 import InfoController from "./controllers/info-controller";
 import Loading from "./components/loading";
 import Menu, {MenuItem} from "./components/menu";
+import Provider from "./api/provider";
 import Statistics from "./components/statistics";
+import Store from "./api/store";
 import TripController from "./controllers/trip-controller";
 import TripEvents from "./components/trip-events";
 import {render, RenderPosition, remove} from "./utils/render";
 
 const HIDDEN_CLASS = `visually-hidden`;
-const AUTHORIZATION = `Basic akZySW7RrTUQXstbEgUh`;
+const AUTHORIZATION = `Basic akZySW7RrTUQXstbEgUh1`;
 const END_POINT = `https://11.ecmascript.pages.academy/big-trip`;
+const OFFLINE_TITLE = ` [offline]`;
+
+const LocalStore = {
+  PREFIX: `big-trip-local-storage`,
+  VERSION: `v1`
+};
+
+const onError = (error) => {
+  const node = document.createElement(`div`);
+  node.style = `width: 180px; margin: 0 auto; text-align: center; background-color: red;`;
+
+  node.textContent = error;
+  document.body.insertAdjacentElement(`afterbegin`, node);
+};
 
 const eventsModel = new Events();
 const api = new API(END_POINT, AUTHORIZATION);
+const store = new Store(`${LocalStore.PREFIX}-${LocalStore.VERSION}`, window.localStorage);
+const apiWithProvider = new Provider(api, store);
 
 const tripMainElement = document.querySelector(`.trip-main`);
 const tripInfoController = new InfoController(tripMainElement, eventsModel);
@@ -26,7 +44,7 @@ const addEventButton = tripMainElement.querySelector(`.trip-main__event-add-btn`
 const bodyContainer = document.querySelector(`.page-body__page-main .page-body__container`);
 const tripEventsComponent = new TripEvents();
 const loadingComponent = new Loading();
-const tripController = new TripController(tripEventsComponent, eventsModel, api);
+const tripController = new TripController(tripEventsComponent, eventsModel, apiWithProvider);
 const statisticsComponent = new Statistics(eventsModel);
 
 const menuItemChangeHandler = (menuItem) => {
@@ -63,12 +81,30 @@ addEventButton.addEventListener(`click`, (evt) => {
   });
 });
 
-api.getData()
+window.addEventListener(`load`, () => {
+  navigator.serviceWorker.register(`/sw.js`);
+});
+
+window.addEventListener(`online`, () => {
+  document.title = document.title.replace(OFFLINE_TITLE, ``);
+  apiWithProvider.sync();
+});
+
+window.addEventListener(`offline`, () => {
+  document.title += OFFLINE_TITLE;
+});
+
+apiWithProvider.getData()
+  .finally(() => {
+    remove(loadingComponent);
+  })
   .then((data) => {
     const [destinations, eventTypes, events] = data;
     eventsModel.events = events;
-    remove(loadingComponent);
     menuComponent.setMenuItemChangeHandler(menuItemChangeHandler);
     addEventButton.disabled = false;
     tripController.render(eventTypes, destinations);
+  })
+  .catch((error) => {
+    onError(error);
   });

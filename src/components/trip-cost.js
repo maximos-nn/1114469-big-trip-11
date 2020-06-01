@@ -8,7 +8,7 @@ const createTripCostTemplate = (totalPrice) => {
   );
 };
 
-const getOffersTotalPrice = (total, offer) => total + (offer.isSelected ? offer.price : 0);
+const getOffersTotalPrice = (total, offer) => total + offer.price;
 
 const getEventTotalPrice = (total, event) => total + event.price + event.offers.reduce(getOffersTotalPrice, 0);
 

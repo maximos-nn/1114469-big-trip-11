@@ -9,15 +9,15 @@ import {getDate} from "../utils/common";
 
 const HIDDEN_CLASS = `trip-events--hidden`;
 
-const mapEventToDate = (resultMap, event) => {
+const mapEventToDate = (result, event) => {
   const key = getDate(event.startDate.getTime());
 
-  if (!resultMap.has(key)) {
-    resultMap.set(key, []);
+  if (!result.has(key)) {
+    result.set(key, []);
   }
 
-  resultMap.get(key).push(event);
-  return resultMap;
+  result.get(key).push(event);
+  return result;
 };
 
 const groupByDays = (events) => events.reduce(mapEventToDate, new Map());

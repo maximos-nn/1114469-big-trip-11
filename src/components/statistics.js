@@ -75,13 +75,13 @@ const renderChart = (ctx, totals, title, prefix, suffix) => {
   });
 };
 
-const mapPriceToType = (resultMap, event) => {
+const mapPriceToType = (result, event) => {
   const key = event.type;
-  if (!resultMap.has(key)) {
-    resultMap.set(key, 0);
+  if (!result.has(key)) {
+    result.set(key, 0);
   }
-  resultMap.set(key, resultMap.get(key) + event.price);
-  return resultMap;
+  result.set(key, result.get(key) + event.price);
+  return result;
 };
 
 const getSumByEventType = (events) => events.reduce(mapPriceToType, new Map());
@@ -91,13 +91,13 @@ const renderMoneyChart = (moneyCtx, events) => {
   return renderChart(moneyCtx, sumByEventType, `MONEY`, `€ `, ``);
 };
 
-const mapCountToType = (resultMap, event) => {
+const mapCountToType = (result, event) => {
   const key = event.type;
-  if (!resultMap.has(key)) {
-    resultMap.set(key, 0);
+  if (!result.has(key)) {
+    result.set(key, 0);
   }
-  resultMap.set(key, resultMap.get(key) + 1);
-  return resultMap;
+  result.set(key, result.get(key) + 1);
+  return result;
 };
 
 const getCountByEventType = (events) => events.reduce(mapCountToType, new Map());
@@ -107,14 +107,14 @@ const renderTransportChart = (transportCtx, events) => {
   return renderChart(transportCtx, countByType, `TRANSPORT`, ``, `x`);
 };
 
-const mapDurationToType = (resultMap, event) => {
+const mapDurationToType = (result, event) => {
   const key = event.type;
   const duration = Math.abs(event.startDate - event.endDate);
-  if (!resultMap.has(key)) {
-    resultMap.set(key, 0);
+  if (!result.has(key)) {
+    result.set(key, 0);
   }
-  resultMap.set(key, resultMap.get(key) + duration);
-  return resultMap;
+  result.set(key, result.get(key) + duration);
+  return result;
 };
 
 const getTimeByEventType = (events) => events.reduce(mapDurationToType, new Map());

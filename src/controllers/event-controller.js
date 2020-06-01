@@ -2,6 +2,7 @@ import EditForm, {EmptyEvent} from "../components/edit-form";
 import Event from "../components/event";
 import EventModel from "../models/event";
 import {render, replace, remove} from "../utils/render";
+import {getEventTypeData} from "../utils/common";
 
 const SHAKE_ANIMATION_TIMEOUT = 600;
 
@@ -30,8 +31,19 @@ export default class EventController {
 
     this._mode = mode;
 
-    this._eventComponent = new Event(event);
-    this._eventEditComponent = new EditForm(this._eventTypes, event, this._destinations);
+    const {preposition, offers: typeOffers} = getEventTypeData(this._eventTypes, event.type);
+    const eventToRender = Object.assign({}, event, {preposition, isNew: event === EmptyEvent});
+    if (event === EmptyEvent) {
+      eventToRender.offers = typeOffers;
+    } else {
+      eventToRender.offers = typeOffers.map((offer) => Object.assign(
+          {},
+          offer,
+          {isSelected: event.offers.findIndex((selected) => selected.title === offer.title) > -1}
+      ));
+    }
+    this._eventComponent = new Event(eventToRender);
+    this._eventEditComponent = new EditForm(this._eventTypes, eventToRender, this._destinations);
 
     this._eventComponent.setEditButtonClickHandler(() => {
       this._replaceEventToEdit();
@@ -56,7 +68,6 @@ export default class EventController {
     this._eventEditComponent.setFavoriteButtonClickHandler(() => {
       const newEvent = EventModel.clone(event);
       newEvent.isFavorite = !newEvent.isFavorite;
-      newEvent.offers = newEvent.offers.filter((offer) => offer.isSelected);
       this._eventEditComponent.disable();
       this._onDataChange(this, event, newEvent);
     });
