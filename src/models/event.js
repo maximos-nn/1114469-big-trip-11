@@ -1,10 +1,7 @@
-import {getEventTypeData} from "../utils/common";
-
 export default class Event {
   constructor(event) {
     this.id = event[`id`];
     this.type = event[`type`];
-    this.preposition = event[`preposition`];
     this.price = event[`base_price`];
     this.startDate = new Date(event[`date_from`]);
     this.endDate = new Date(event[`date_to`]);
@@ -31,14 +28,12 @@ export default class Event {
     };
   }
 
-  static parseEvent(event, eventTypes) {
-    const {preposition, offers} = getEventTypeData(eventTypes, event[`type`]);
-    event[`offers`] = offers.map((offer) => Object.assign({}, offer, {isSelected: event[`offers`].findIndex((selected) => selected.title === offer.title) > -1}));
-    return new Event(Object.assign(event, {preposition}));
+  static parseEvent(event) {
+    return new Event(event);
   }
 
-  static parseEvents(events, eventTypes) {
-    return events.map((event) => Event.parseEvent(event, eventTypes));
+  static parseEvents(events) {
+    return events.map((event) => Event.parseEvent(event));
   }
 
   static clone(event) {
@@ -49,7 +44,6 @@ export default class Event {
     return new Event({
       [`id`]: event.id,
       [`type`]: event.type,
-      [`preposition`]: event.preposition,
       [`base_price`]: event.price,
       [`date_from`]: event.startDate.toISOString(),
       [`date_to`]: event.endDate.toISOString(),

@@ -5,6 +5,7 @@ import ChartDataLabels from "chartjs-plugin-datalabels";
 const BAR_HEIGHT = 55;
 const MIN_CHART_HIGHT = 150;
 const MS_PER_HOUR = 3600000;
+const TRANSPORT_TYPES = [`taxi`, `bus`, `train`, `ship`, `transport`, `drive`, `flight`];
 
 const renderChart = (ctx, totals, title, prefix, suffix) => {
   ctx.height = Math.max(BAR_HEIGHT * totals.size, MIN_CHART_HIGHT);
@@ -13,7 +14,7 @@ const renderChart = (ctx, totals, title, prefix, suffix) => {
     plugins: [ChartDataLabels],
     type: `horizontalBar`,
     data: {
-      labels: Array.from(totals.keys()),
+      labels: Array.from(totals.keys()).map((label) => label.toUpperCase()),
       datasets: [{
         data: Array.from(totals.values()),
         backgroundColor: `#ffffff`,
@@ -75,13 +76,13 @@ const renderChart = (ctx, totals, title, prefix, suffix) => {
   });
 };
 
-const mapPriceToType = (resultMap, event) => {
+const mapPriceToType = (result, event) => {
   const key = event.type;
-  if (!resultMap.has(key)) {
-    resultMap.set(key, 0);
+  if (!result.has(key)) {
+    result.set(key, 0);
   }
-  resultMap.set(key, resultMap.get(key) + event.price);
-  return resultMap;
+  result.set(key, result.get(key) + event.price);
+  return result;
 };
 
 const getSumByEventType = (events) => events.reduce(mapPriceToType, new Map());
@@ -91,30 +92,36 @@ const renderMoneyChart = (moneyCtx, events) => {
   return renderChart(moneyCtx, sumByEventType, `MONEY`, `€ `, ``);
 };
 
-const mapCountToType = (resultMap, event) => {
+const mapCountToType = (result, event) => {
   const key = event.type;
-  if (!resultMap.has(key)) {
-    resultMap.set(key, 0);
+  if (!result.has(key)) {
+    result.set(key, 0);
   }
-  resultMap.set(key, resultMap.get(key) + 1);
-  return resultMap;
+  result.set(key, result.get(key) + 1);
+  return result;
 };
 
 const getCountByEventType = (events) => events.reduce(mapCountToType, new Map());
 
 const renderTransportChart = (transportCtx, events) => {
   const countByType = getCountByEventType(events);
-  return renderChart(transportCtx, countByType, `TRANSPORT`, ``, `x`);
+  const transportTotals = new Map();
+  TRANSPORT_TYPES.forEach((type) => {
+    if (countByType.has(type)) {
+      transportTotals.set(type, countByType.get(type));
+    }
+  });
+  return renderChart(transportCtx, transportTotals, `TRANSPORT`, ``, `x`);
 };
 
-const mapDurationToType = (resultMap, event) => {
+const mapDurationToType = (result, event) => {
   const key = event.type;
   const duration = Math.abs(event.startDate - event.endDate);
-  if (!resultMap.has(key)) {
-    resultMap.set(key, 0);
+  if (!result.has(key)) {
+    result.set(key, 0);
   }
-  resultMap.set(key, resultMap.get(key) + duration);
-  return resultMap;
+  result.set(key, result.get(key) + duration);
+  return result;
 };
 
 const getTimeByEventType = (events) => events.reduce(mapDurationToType, new Map());

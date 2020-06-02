@@ -1,7 +1,7 @@
-import Event from "./models/event";
-import Offers from "./models/offers";
-import Store from "./store";
+import Event from "../models/event";
+import Offers from "../models/offers";
 
+const DEFAULT_HEADERS = {"Content-Type": `application/json`};
 const URLS = [`destinations`, `offers`, `points`];
 
 const Method = {
@@ -36,7 +36,7 @@ export default class API {
       .then((responses) => Promise.all(responses.map((response) => response.json())))
       .then((data) => {
         const [serverDestinations, offers, events] = data;
-        const eventTypes = Offers.parseOffers(offers);
+        const eventTypes = Offers.parse(offers);
         const destinations = serverDestinations.map((destination) => {
           return {
             destination: destination.name,
@@ -46,9 +46,7 @@ export default class API {
             }
           };
         });
-        Store.setDestinations(destinations);
-        Store.setEventTypes(eventTypes);
-        return [destinations, eventTypes, Event.parseEvents(events, eventTypes)];
+        return [destinations, eventTypes, Event.parseEvents(events)];
       });
   }
 
@@ -57,7 +55,7 @@ export default class API {
       url: `points`,
       method: Method.POST,
       body: JSON.stringify(newEvent.toRaw()),
-      headers: new Headers({"Content-Type": `application/json`})
+      headers: new Headers(DEFAULT_HEADERS)
     })
       .then((response) => response.json())
       .then(this._parseResponse);
@@ -68,7 +66,7 @@ export default class API {
       url: `points/${id}`,
       method: Method.PUT,
       body: JSON.stringify(newEvent.toRaw()),
-      headers: new Headers({"Content-Type": `application/json`})
+      headers: new Headers(DEFAULT_HEADERS)
     })
       .then((response) => response.json())
       .then(this._parseResponse);
@@ -78,8 +76,18 @@ export default class API {
     return this._load({url: `points/${id}`, method: Method.DELETE});
   }
 
+  sync(events) {
+    return this._load({
+      url: `points/sync`,
+      method: Method.POST,
+      body: JSON.stringify(events),
+      headers: new Headers(DEFAULT_HEADERS)
+    })
+      .then((response) => response.json());
+  }
+
   _parseResponse(event) {
-    return Event.parseEvent(event, Store.eventTypes);
+    return Event.parseEvent(event);
   }
 
   _load({url, method = Method.GET, body = null, headers = new Headers()}) {

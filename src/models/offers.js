@@ -16,18 +16,18 @@ const types = [
 const setOffer = (offer) => Object.assign({}, offer, {name: offer.title.toLowerCase().replace(/ /g, `-`), isSelected: false});
 
 const setOffers = (group, typeOffers) => {
-  group.offers = group.types.reduce((resultObj, type) => {
-    resultObj[type] = typeOffers.get(type).map(setOffer);
-    return resultObj;
+  group.offers = group.types.reduce((result, type) => {
+    result[type] = typeOffers.get(type).map(setOffer);
+    return result;
   }, {});
   return group;
 };
 
 export default class Offers {
-  static parseOffers(data) {
-    const typeOffers = data.reduce((resultMap, offers) => {
-      resultMap.set(offers.type, offers.offers);
-      return resultMap;
+  static parse(offers) {
+    const typeOffers = offers.reduce((result, offer) => {
+      result.set(offer.type, offer.offers);
+      return result;
     }, new Map());
     return types.map((group) => setOffers(group, typeOffers));
   }

@@ -201,7 +201,7 @@ const createEditFormTemplate = (eventTypes, event, destinations, captions, isEdi
           <span class="visually-hidden">Price</span>
           &euro;
         </label>
-        <input class="event__input  event__input--price" id="event-price-1" type="number" step="1" pattern="\d+" name="event-price" value="${price}">
+        <input class="event__input  event__input--price" id="event-price-1" type="number" step="1" min="1" pattern="\d+" name="event-price" value="${price}">
       </div>
 
       <button class="event__save-btn  btn  btn--blue" type="submit" ${isSaveButtonDisabled ? `disabled` : ``}>${submitButtonCaption}</button>
@@ -217,11 +217,10 @@ const createEditFormTemplate = (eventTypes, event, destinations, captions, isEdi
 const parseFormData = (formData, eventTypes, destinationInfoMap) => {
   const destination = formData.get(`event-destination`);
   const type = formData.get(`event-type`);
-  const {preposition, offers} = getEventTypeData(eventTypes, type);
-  const newOffers = (offers || []).filter((offer) => !!formData.get(`event-offer-${offer.name}`)).map((offer) => Object.assign({}, offer, {isSelected: true}));
+  const offers = getEventTypeData(eventTypes, type).offers;
+  const newOffers = (offers || []).filter((offer) => !!formData.get(`event-offer-${offer.name}`)).map((offer) => Object.assign({}, {title: offer.title, price: offer.price}));
   return {
     type,
-    preposition: preposition || ``,
     destination,
     startDate: new Date(formData.get(`event-start-time`)),
     endDate: new Date(formData.get(`event-end-time`)),
@@ -236,12 +235,9 @@ export default class EditForm extends AbstractSmartComponent {
   constructor(eventTypes, event, destinations) {
     super();
     this._eventTypes = eventTypes;
-    this._originalEvent = event || EmptyEvent;
-    this._isEditMode = this._originalEvent !== EmptyEvent;
-    this._event = Object.assign({}, event);
-    if (!this._isEditMode) {
-      this._event.offers = getEventTypeData(eventTypes, this._event.type).offers;
-    }
+    this._originalEvent = event;
+    this._isEditMode = !event.isNew;
+    this._event = event;
     this._destinationInfoMap = new Map(destinations.map((it) => [it.destination, it.destinationInfo]));
     this._submitHandler = null;
     this._resetHandler = null;
@@ -303,12 +299,16 @@ export default class EditForm extends AbstractSmartComponent {
       saveButton.disabled = true;
       if (isInt(evt.target.value)) {
         this._event.price = evt.target.value;
-        saveButton.disabled = false;
+        saveButton.disabled = !this._destinationInfoMap.has(this._event.destination);
       }
     });
 
     element.querySelector(`#event-start-time-1`).addEventListener(`change`, (evt) => {
       this._event.startDate = new Date(evt.target.value);
+      this._endFlatpickr.set(`minDate`, this._event.startDate);
+      if (this._event.startDate > this._event.endDate) {
+        this._endFlatpickr.setDate(this._event.startDate);
+      }
     });
 
     element.querySelector(`#event-end-time-1`).addEventListener(`change`, (evt) => {
@@ -396,12 +396,9 @@ export default class EditForm extends AbstractSmartComponent {
   }
 
   _toggle(disabled) {
-    const element = this.getElement();
-    element.querySelectorAll(`input`).forEach((input) => {
-      input.disabled = disabled;
-    });
-    element.querySelectorAll(`button`).forEach((button) => {
-      button.disabled = disabled;
+    const formElement = this.getElement();
+    formElement.querySelectorAll(`input, button`).forEach((element) => {
+      element.disabled = disabled;
     });
   }
 
@@ -421,9 +418,17 @@ export default class EditForm extends AbstractSmartComponent {
       altFormat: `d/m/Y H:i`
     };
     const startDateElement = this.getElement().querySelector(`#event-start-time-1`);
-    this._startFlatpickr = flatpickr(startDateElement, Object.assign({}, options, {defaultDate: this._event && this._event.startDate || `today`}));
+    const startDate = this._event && this._event.startDate || `today`;
+    this._startFlatpickr = flatpickr(
+        startDateElement,
+        Object.assign({}, options, {defaultDate: startDate})
+    );
     const endDateElement = this.getElement().querySelector(`#event-end-time-1`);
-    this._endFlatpickr = flatpickr(endDateElement, Object.assign({}, options, {defaultDate: this._event && this._event.endDate || `today`}));
+    const endDate = this._event && this._event.endDate || `today`;
+    this._endFlatpickr = flatpickr(
+        endDateElement,
+        Object.assign({}, options, {defaultDate: endDate, minDate: startDate})
+    );
   }
 }
 

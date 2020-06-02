@@ -5,16 +5,16 @@ const OFFERS_COUNT = 3;
 
 const createOffersMarkup = (offers) => {
   return offers.filter((offer) => offer.isSelected).slice(0, OFFERS_COUNT)
-  .map((offer) => {
-    const {title, price} = offer;
-    return (
-      `<li class="event__offer">
-      <span class="event__offer-title">${title}</span>
-      &plus;
-      &euro;&nbsp;<span class="event__offer-price">${price}</span>
-    </li>`
-    );
-  }).join(`\n`);
+    .map((offer) => {
+      const {title, price} = offer;
+      return (
+        `<li class="event__offer">
+        <span class="event__offer-title">${title}</span>
+        &plus;
+        &euro;&nbsp;<span class="event__offer-price">${price}</span>
+      </li>`
+      );
+    }).join(`\n`);
 };
 
 const createOffersListMarkup = (offers) => {

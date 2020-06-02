@@ -2,6 +2,7 @@ import EditForm, {EmptyEvent} from "../components/edit-form";
 import Event from "../components/event";
 import EventModel from "../models/event";
 import {render, replace, remove} from "../utils/render";
+import {getEventTypeData} from "../utils/common";
 
 const SHAKE_ANIMATION_TIMEOUT = 600;
 
@@ -30,8 +31,19 @@ export default class EventController {
 
     this._mode = mode;
 
-    this._eventComponent = new Event(event);
-    this._eventEditComponent = new EditForm(this._eventTypes, event, this._destinations);
+    const {preposition, offers: typeOffers} = getEventTypeData(this._eventTypes, event.type);
+    const eventToRender = Object.assign({}, event, {preposition, isNew: event === EmptyEvent});
+    if (event === EmptyEvent) {
+      eventToRender.offers = typeOffers;
+    } else {
+      eventToRender.offers = typeOffers.map((offer) => Object.assign(
+          {},
+          offer,
+          {isSelected: event.offers.findIndex((selected) => selected.title === offer.title) > -1}
+      ));
+    }
+    this._eventComponent = new Event(eventToRender);
+    this._eventEditComponent = new EditForm(this._eventTypes, eventToRender, this._destinations);
 
     this._eventComponent.setEditButtonClickHandler(() => {
       this._replaceEventToEdit();
@@ -56,9 +68,8 @@ export default class EventController {
     this._eventEditComponent.setFavoriteButtonClickHandler(() => {
       const newEvent = EventModel.clone(event);
       newEvent.isFavorite = !newEvent.isFavorite;
-      newEvent.offers = newEvent.offers.filter((offer) => offer.isSelected);
       this._eventEditComponent.disable();
-      this._onDataChange(this, event, newEvent);
+      this._onDataChange(this, event, newEvent, false);
     });
 
     this._eventEditComponent.setCloseButtonClickHandler(() => {
@@ -67,10 +78,6 @@ export default class EventController {
 
     switch (this._mode) {
       case Mode.ADDING:
-        if (oldEventComponent && oldEventEditComponent) {
-          remove(oldEventComponent);
-          remove(oldEventEditComponent);
-        }
         document.addEventListener(`keydown`, this._onEscKeyDown);
         render(this._container, this._eventEditComponent);
         break;
@@ -79,13 +86,26 @@ export default class EventController {
         if (oldEventComponent && oldEventEditComponent) {
           replace(this._eventComponent, oldEventComponent);
           replace(this._eventEditComponent, oldEventEditComponent);
-          remove(oldEventComponent);
-          remove(oldEventEditComponent);
           this._replaceEditToEvent();
         } else {
           render(this._container, this._eventComponent);
         }
         break;
+
+      case Mode.EDIT:
+        if (oldEventComponent && oldEventEditComponent) {
+          replace(this._eventComponent, oldEventComponent);
+          replace(this._eventEditComponent, oldEventEditComponent);
+        } else {
+          render(this._container, this._eventEditComponent);
+        }
+        document.addEventListener(`keydown`, this._onEscKeyDown);
+        break;
+    }
+
+    if (oldEventComponent && oldEventEditComponent) {
+      remove(oldEventComponent);
+      remove(oldEventEditComponent);
     }
   }
 

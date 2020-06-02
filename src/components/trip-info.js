@@ -1,12 +1,14 @@
 import AbstractComponent from "./abstract-component";
 import {formatMonthDayDate} from "../utils/format";
 
+const MAX_POINTS_IN_TITLE = 3;
+
 const getTripTitle = (events) => {
   const len = events && events.length;
   if (!len) {
     return ``;
   }
-  if (len <= 3) {
+  if (len <= MAX_POINTS_IN_TITLE) {
     return events.map((event) => event.destination).join(`&nbsp;&mdash;&nbsp;`);
   }
   return `${events[0].destination}&nbsp;&mdash;&nbsp;&hellip;&nbsp;&mdash;&nbsp;${events[len - 1].destination}`;
