@@ -69,8 +69,7 @@ export default class EventController {
       const newEvent = EventModel.clone(event);
       newEvent.isFavorite = !newEvent.isFavorite;
       this._eventEditComponent.disable();
-      this._onDataChange(this, event, newEvent);
-      this._eventEditComponent.enable();
+      this._onDataChange(this, event, newEvent, false);
     });
 
     this._eventEditComponent.setCloseButtonClickHandler(() => {
@@ -79,10 +78,6 @@ export default class EventController {
 
     switch (this._mode) {
       case Mode.ADDING:
-        if (oldEventComponent && oldEventEditComponent) {
-          remove(oldEventComponent);
-          remove(oldEventEditComponent);
-        }
         document.addEventListener(`keydown`, this._onEscKeyDown);
         render(this._container, this._eventEditComponent);
         break;
@@ -91,13 +86,26 @@ export default class EventController {
         if (oldEventComponent && oldEventEditComponent) {
           replace(this._eventComponent, oldEventComponent);
           replace(this._eventEditComponent, oldEventEditComponent);
-          remove(oldEventComponent);
-          remove(oldEventEditComponent);
           this._replaceEditToEvent();
         } else {
           render(this._container, this._eventComponent);
         }
         break;
+
+      case Mode.EDIT:
+        if (oldEventComponent && oldEventEditComponent) {
+          replace(this._eventComponent, oldEventComponent);
+          replace(this._eventEditComponent, oldEventEditComponent);
+        } else {
+          render(this._container, this._eventEditComponent);
+        }
+        document.addEventListener(`keydown`, this._onEscKeyDown);
+        break;
+    }
+
+    if (oldEventComponent && oldEventEditComponent) {
+      remove(oldEventComponent);
+      remove(oldEventEditComponent);
     }
   }
 

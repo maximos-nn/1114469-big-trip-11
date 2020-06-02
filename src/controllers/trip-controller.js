@@ -6,6 +6,7 @@ import NoEvents from "../components/no-events";
 import Sort, {SortType} from "../components/sort";
 import {render, remove} from "../utils/render";
 import {getDate} from "../utils/common";
+import {FilterType} from "../utils/filter";
 
 const HIDDEN_CLASS = `trip-events--hidden`;
 
@@ -97,7 +98,7 @@ export default class TripController {
         this._onDataChange,
         this._onViewChange
     );
-    this._updateContainer();
+    this._eventsModel.filter = FilterType.EVERYTHING;
   }
 
   show() {
@@ -164,23 +165,23 @@ export default class TripController {
     this._renderDays(sortType);
   }
 
-  _onDataChange(eventController, oldData, newData) {
+  _cleanNewEvent() {
+    this._newEvent.clean();
+    this._newEvent = null;
+    this._onNewEventHandled();
+  }
+
+  _onDataChange(eventController, oldData, newData, shouldRender = true) {
     eventController.clearErrorStyle();
     if (oldData === EmptyEvent) {
-      const update = () => {
-        eventController.clean();
-        this._updateContainer();
-        this._onNewEventHandled();
-      };
-
-      this._newEvent = null;
       if (newData === null) {
-        update();
+        this._cleanNewEvent();
       } else {
         this._api.createEvent(newData)
           .then((event) => {
             this._eventsModel.addEvent(event);
-            update();
+            this._cleanNewEvent();
+            this._updateContainer();
           })
           .catch(() => {
             eventController.shake();
@@ -200,11 +201,10 @@ export default class TripController {
           eventController.shake();
         });
     } else {
-      console.log(oldData, newData);
       this._api.updateEvent(oldData.id, newData)
         .then((event) => {
           this._eventsModel.updateEvent(oldData.id, event);
-          if (oldData.isFavorite === newData.isFavorite) {
+          if (shouldRender) {
             this._updateEvents(this._sortComponent.getSortType());
           } else {
             eventController.render(event, EventControllerMode.EDIT);
@@ -217,6 +217,9 @@ export default class TripController {
   }
 
   _onViewChange() {
+    if (this._newEvent) {
+      this._cleanNewEvent();
+    }
     this._eventControllers.forEach((it) => it.setDefaultView());
   }
 

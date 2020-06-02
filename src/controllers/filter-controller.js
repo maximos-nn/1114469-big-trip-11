@@ -50,9 +50,11 @@ export default class FilterController {
     }
   }
 
-  reset() {
+  reset(resetModel = false) {
     this._activeFilterType = FilterType.EVERYTHING;
-    this._model.filter = this._activeFilterType;
+    if (resetModel) {
+      this._model.filter = this._activeFilterType;
+    }
     this.render();
   }
 
