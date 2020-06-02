@@ -12,7 +12,7 @@ import TripEvents from "./components/trip-events";
 import {render, RenderPosition, remove} from "./utils/render";
 
 const HIDDEN_CLASS = `visually-hidden`;
-const AUTHORIZATION = `Basic akZySW7RrTUQXstbEgUh1`;
+const AUTHORIZATION = `Basic akZySW7RrTUQXstbEgUh2`;
 const END_POINT = `https://11.ecmascript.pages.academy/big-trip`;
 const OFFLINE_TITLE = ` [offline]`;
 
@@ -87,7 +87,17 @@ window.addEventListener(`load`, () => {
 
 window.addEventListener(`online`, () => {
   document.title = document.title.replace(OFFLINE_TITLE, ``);
-  apiWithProvider.sync();
+  if (!apiWithProvider.isSyncNeeded()) {
+    return;
+  }
+  apiWithProvider.sync()
+    .then((events) => {
+      eventsModel.events = events;
+      tripController.update();
+    })
+    .catch((error) => {
+      onError(error);
+    });
 });
 
 window.addEventListener(`offline`, () => {

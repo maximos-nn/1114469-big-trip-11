@@ -83,19 +83,22 @@ export default class Provider {
     return Promise.resolve();
   }
 
+  isSyncNeeded() {
+    return this._isDirty;
+  }
+
   sync() {
-    if (!this._isDirty) {
-      return Promise.resolve();
-    }
     if (isOnline()) {
       const storedEvents = Object.values(this._store.getItems(StorageItemGroup.EVENTS));
       return this._api.sync(storedEvents)
         .then((response) => {
-          const createdEvents = getSyncedEvents(response.created);
+          const createdEvents = response.created;
           const updatedEvents = getSyncedEvents(response.updated);
-          const items = createStoreStructure([...createdEvents, ...updatedEvents]);
+          const newEvents = [...createdEvents, ...updatedEvents];
+          const items = createStoreStructure(newEvents);
           this._store.setItems(items, StorageItemGroup.EVENTS);
           this._isDirty = false;
+          return Event.parseEvents(newEvents);
         });
     }
     return Promise.reject(new Error(`Sync data failed`));

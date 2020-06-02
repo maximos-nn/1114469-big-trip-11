@@ -110,6 +110,10 @@ export default class TripController {
     this._containerComponent.hide(HIDDEN_CLASS);
   }
 
+  update() {
+    this._updateEvents(this._sortComponent.getSortType());
+  }
+
   _renderDays(sortType) {
     render(this._container, this._dayListComponent);
     const sortedEvents = sortEvents(this._eventsModel.events, sortType);
