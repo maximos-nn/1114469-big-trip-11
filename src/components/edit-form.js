@@ -237,7 +237,7 @@ export default class EditForm extends AbstractSmartComponent {
     this._eventTypes = eventTypes;
     this._originalEvent = event;
     this._isEditMode = !event.isNew;
-    this._event = event;
+    this._event = Object.assign({}, this._originalEvent);
     this._destinationInfoMap = new Map(destinations.map((it) => [it.destination, it.destinationInfo]));
     this._submitHandler = null;
     this._resetHandler = null;
@@ -278,6 +278,7 @@ export default class EditForm extends AbstractSmartComponent {
   _setUIHandlers() {
     const element = this.getElement();
     const saveButton = element.querySelector(`.event__save-btn`);
+    const destinationField = element.querySelector(`#event-destination-1`);
 
     element.querySelectorAll(`input[name="event-type"]`).forEach((input) => {
       input.addEventListener(`change`, (evt) => {
@@ -287,7 +288,7 @@ export default class EditForm extends AbstractSmartComponent {
       });
     });
 
-    element.querySelector(`#event-destination-1`).addEventListener(`change`, (evt) => {
+    destinationField.addEventListener(`change`, (evt) => {
       saveButton.disabled = true;
       if (this._destinationInfoMap.has(evt.target.value)) {
         this._event.destination = evt.target.value;
@@ -299,7 +300,7 @@ export default class EditForm extends AbstractSmartComponent {
       saveButton.disabled = true;
       if (isInt(evt.target.value)) {
         this._event.price = evt.target.value;
-        saveButton.disabled = !this._destinationInfoMap.has(this._event.destination);
+        saveButton.disabled = !this._destinationInfoMap.has(destinationField.value);
       }
     });
 

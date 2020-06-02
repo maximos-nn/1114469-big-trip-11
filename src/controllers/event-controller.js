@@ -5,6 +5,7 @@ import {render, replace, remove} from "../utils/render";
 import {getEventTypeData} from "../utils/common";
 
 const SHAKE_ANIMATION_TIMEOUT = 600;
+const MS_PER_SECOND = 1000;
 
 const Mode = {
   ADDING: `adding`,
@@ -122,8 +123,8 @@ export default class EventController {
   }
 
   shake() {
-    this._eventEditComponent.getElement().style.animation = `shake ${SHAKE_ANIMATION_TIMEOUT / 1000}s`;
-    this._eventComponent.getElement().style.animation = `shake ${SHAKE_ANIMATION_TIMEOUT / 1000}s`;
+    this._eventEditComponent.getElement().style.animation = `shake ${SHAKE_ANIMATION_TIMEOUT / MS_PER_SECOND}s`;
+    this._eventComponent.getElement().style.animation = `shake ${SHAKE_ANIMATION_TIMEOUT / MS_PER_SECOND}s`;
     this.setErrorStyle();
 
     setTimeout(() => {
